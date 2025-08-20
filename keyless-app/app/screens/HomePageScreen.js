@@ -1,54 +1,91 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Animated } from 'react-native';
 
 export default function HomePageScreen({ navigation }) {
   const username = "Jon Doe";
+  const buttonAnim = new Animated.Value(1);
+
+  const handlePressIn = () => {
+    Animated.spring(buttonAnim, { toValue: 0.95, useNativeDriver: true }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(buttonAnim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+  };
+
+  const renderButton = (title, onPress) => (
+    <Animated.View style={{ transform: [{ scale: buttonAnim }] }}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.buttonText}>{title}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ alignItems: 'center' }}>
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/keyless-notext.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+        <Image
+          source={require('../../assets/keyless-notext.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.username}>{username}</Text>
       </View>
+
       <View style={styles.buttons}>
-        <Button title="CADASTRAR" onPress={() => navigation.navigate('SignIn')} />
-        <Button title="COMPARTILHAR" onPress={() => navigation.navigate('Share')} />
-        <Button title="CONFIGURAÇÕES" onPress={() => navigation.navigate('WalletAction')} />
+        {renderButton("CADASTRAR", () => navigation.navigate('SignIn'))}
+        {renderButton("COMPARTILHAR", () => navigation.navigate('Share'))}
+        {renderButton("CONFIGURAÇÕES", () => navigation.navigate('WalletAction'))}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 12, backgroundColor: '#fff' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 40,
-    justifyContent: 'flex-start',
-    paddingLeft: 0,
-  },
-  logoContainer: {
-    flex: 2.5,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginLeft: -32, 
-  },
-  logo: { width: 240, height: 240 },
-  username: {
+  container: {
     flex: 1,
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlignVertical: 'center',
-    textAlign: 'left',
-    marginLeft: 4, 
+    backgroundColor: '#F7F9FC',
+    paddingTop: 40,
   },
-  buttons: { gap: 16 },
+  header: {
+    width: '90%',
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 180,
+    height: 180,
+    marginBottom: 12,
+  },
+  username: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#4E90FF',
+    textAlign: 'center',
+  },
+  buttons: {
+    width: '90%',
+    gap: 16,
+  },
+  button: {
+    backgroundColor: '#4E90FF',
+    paddingVertical: 16,
+    borderRadius: 24,
+    shadowColor: '#4E90FF',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
 });
