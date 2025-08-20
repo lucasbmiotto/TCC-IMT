@@ -11,7 +11,7 @@ export default function WelcomeScreen({ navigation, route }) {
     saveDID(fakeDID);
 
     const timeout = setTimeout(() => {
-      navigation.replace('Login');
+      navigation.replace('Home');
     }, 3000);
 
     return () => clearTimeout(timeout);
