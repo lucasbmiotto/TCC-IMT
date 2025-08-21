@@ -1,68 +1,98 @@
-import React from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function ShareScreen({ navigation }) {
-  const credentials = [
-    { value: 'Jon Doe', route: 'QRCode' },
-    { value: 'jon.doe@email.com', route: 'QRCode' },
-    { value: 'did:key:abc123xyz', route: 'QRCode' },
-  ];
+export default function KeysScreen() {
+  const [showPrivate, setShowPrivate] = useState(false);
+  const [showPublic, setShowPublic] = useState(false);
+  const buttonAnimPrivate = new Animated.Value(1);
+  const buttonAnimPublic = new Animated.Value(1);
+
+  const animatePressIn = (anim) => {
+    Animated.spring(anim, { toValue: 0.95, useNativeDriver: true }).start();
+  };
+
+  const animatePressOut = (anim) => {
+    Animated.spring(anim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+  };
+
+  const renderKeyCard = (label, value, show, setShow, anim) => (
+    <View style={styles.card}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputRow}>
+        <TextInput
+          secureTextEntry={!show}
+          style={styles.input}
+          editable={false}
+          value={value}
+        />
+        <Animated.View style={{ transform: [{ scale: anim }] }}>
+          <TouchableOpacity
+            onPress={() => setShow(!show)}
+            onPressIn={() => animatePressIn(anim)}
+            onPressOut={() => animatePressOut(anim)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name={show ? "eye-off" : "eye"} size={28} color="#4E90FF" />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>CREDENCIAIS</Text>
-      <View style={styles.table}>
-        {credentials.map((cred, idx) => (
-          <View key={idx} style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              value={cred.value}
-              editable={false}
-              selectTextOnFocus={false}
-            />
-            <View style={styles.buttonWrapper}>
-              <Button
-                title="Ver"
-                onPress={() => navigation.navigate(cred.route)}
-              />
-            </View>
-          </View>
-        ))}
-      </View>
+      <Text style={styles.title}>Suas Chaves</Text>
+      {renderKeyCard("Chave Privada", "48129ufdsfjoav1948903", showPrivate, setShowPrivate, buttonAnimPrivate)}
+      {renderKeyCard("Chave Pública", "78174ufhdsjn813yr802", showPublic, setShowPublic, buttonAnimPublic)}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 40, textAlign: 'center' },
-  table: {
-    width: 320,
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F9FC',
     padding: 24,
-    borderWidth: 2,
-    borderColor: '#888',
-    borderRadius: 16,
-    backgroundColor: '#fafafa',
-    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#4E90FF',
+    marginBottom: 40,
+  },
+  card: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F4C81',
+    marginBottom: 10,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#B0C4DE',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#F0F5FF',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#eee',
+    paddingVertical: 12,
     fontSize: 16,
+    letterSpacing: 2,
     color: '#333',
-    marginRight: 8,
-  },
-  buttonWrapper: {
-    width: 70,
   },
 });
