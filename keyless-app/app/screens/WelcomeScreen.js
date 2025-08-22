@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { saveDID } from '../utils/Storage';
 
 export default function WelcomeScreen({ navigation, route }) {
@@ -19,14 +19,54 @@ export default function WelcomeScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Bem-vindo!</Text>
-      <Text style={styles.did}>DID: {fakeDID}</Text>
+      <Image
+        source={require('../../assets/keyless-logo.png')}
+        style={styles.logo}
+      />
+      <Text style={styles.title}>Bem-vindo ao Keyless 🎉</Text>
+      <Text style={styles.did}>DID gerado:</Text>
+      <Text style={styles.didValue}>{fakeDID}</Text>
+
+      <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 30 }} />
+      <Text style={styles.loading}>Preparando sua carteira...</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  text: { fontSize: 24, marginBottom: 20 },
-  did: { fontSize: 16, color: 'gray' },
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f7fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  did: {
+    fontSize: 16,
+    color: '#555',
+  },
+  didValue: {
+    fontSize: 16,
+    color: '#007AFF',
+    fontWeight: '600',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  loading: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 10,
+  },
 });

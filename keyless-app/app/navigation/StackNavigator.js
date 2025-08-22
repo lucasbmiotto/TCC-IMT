@@ -14,6 +14,7 @@ import WalletActionsScreen from '../screens/WalletActionsScreen';
 import KeyScreen from '../screens/KeyScreen';
 import DeleteScreen from '../screens/DeleteScreen';
 import DownloadWalletScreen from '../screens/WalletBackup';
+import ValidarCredenciais from '../screens/ValidarCredenciais';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +34,7 @@ export default function StackNavigator() {
       <Stack.Screen name="Key" component={KeyScreen} />
       <Stack.Screen name="DeleteScreen" component={DeleteScreen} />
       <Stack.Screen name="WalletBackup" component={DownloadWalletScreen} />
+      <Stack.Screen name="ValidateCredentials" component={ValidarCredenciais} />
     </Stack.Navigator>
   );
 }

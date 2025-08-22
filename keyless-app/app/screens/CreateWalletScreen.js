@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+} from 'react-native';
 import { savePassword, saveSeed } from '../utils/Storage';
 import uuid from 'react-native-uuid';
 
@@ -7,11 +14,16 @@ export default function CreateWalletScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const [buttonAnim] = useState(new Animated.Value(1));
 
   const handleCreate = async () => {
-    if (!password || password !== confirm) {
-      setError('Senhas não coincidem ou estão vazias');
+    if (!password || password.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    if (password !== confirm) {
+      setError('As senhas não coincidem');
       return;
     }
 
@@ -20,11 +32,15 @@ export default function CreateWalletScreen({ navigation }) {
       await savePassword(password);
       await saveSeed(generatedSeed);
 
-      Alert.alert('Sucesso', 'Carteira criada! Indo para a frase de segurança...');
-      navigation.navigate('SeedPhrase', { seed: generatedSeed });
+      setError('');
+      setSuccess(true);
+
+      setTimeout(() => {
+        navigation.navigate('SeedPhrase', { seed: generatedSeed });
+      }, 1000);
     } catch (err) {
       console.error('Erro no handleCreate:', err);
-      Alert.alert('Erro', 'Algo deu errado ao criar a carteira.');
+      setError('Algo deu errado ao criar a carteira.');
     }
   };
 
@@ -33,20 +49,31 @@ export default function CreateWalletScreen({ navigation }) {
   };
 
   const handlePressOut = () => {
-    Animated.spring(buttonAnim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+    Animated.spring(buttonAnim, {
+      toValue: 1,
+      friction: 3,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Criar Carteira</Text>
-      
+      <Text style={styles.title}>Proteja sua carteira</Text>
+      <Text style={styles.subtitle}>
+        Crie uma senha segura para proteger suas credenciais digitais.
+      </Text>
+
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Senha"
           placeholderTextColor="#6B7A99"
           secureTextEntry
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(val) => {
+            setPassword(val);
+            setError('');
+            setSuccess(false);
+          }}
           style={styles.input}
         />
         <TextInput
@@ -54,12 +81,17 @@ export default function CreateWalletScreen({ navigation }) {
           placeholderTextColor="#6B7A99"
           secureTextEntry
           value={confirm}
-          onChangeText={setConfirm}
+          onChangeText={(val) => {
+            setConfirm(val);
+            setError('');
+            setSuccess(false);
+          }}
           style={styles.input}
         />
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>Senha criada com sucesso ✅</Text> : null}
 
       <Animated.View style={{ transform: [{ scale: buttonAnim }] }}>
         <TouchableOpacity
@@ -76,32 +108,39 @@ export default function CreateWalletScreen({ navigation }) {
   );
 }
 
+const BLUE = '#007AFF';
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F7F9FC', // Fundo claro e clean
+    backgroundColor: '#F7F9FC',
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
-    color: '#4E90FF', // Azul Keyless original
+    color: BLUE,
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#475569',
+    textAlign: 'center',
+    marginBottom: 32,
   },
   inputContainer: {
     width: '100%',
   },
   input: {
     backgroundColor: '#FFF',
-    color: '#4E90FF',
+    color: BLUE,
     borderWidth: 1,
     borderColor: '#B0C4DE',
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 14,
     fontSize: 16,
     shadowColor: '#000',
     shadowOpacity: 0.05,
@@ -113,21 +152,28 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: 15,
+  },
+  success: {
+    color: '#22c55e',
+    marginBottom: 16,
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: 15,
   },
   button: {
-    backgroundColor: '#4E90FF',
+    backgroundColor: BLUE,
     paddingVertical: 16,
-    paddingHorizontal: 60,
-    borderRadius: 24,
-    shadowColor: '#4E90FF',
-    shadowOpacity: 0.4,
+    borderRadius: 20,
+    shadowColor: BLUE,
+    shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 10,
+    alignItems: 'center',
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
   },
 });
