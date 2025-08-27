@@ -1,91 +1,138 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
 
 export default function WalletActionsScreen({ navigation }) {
-  const [hash, setHash] = useState('');
+  
+  const cardWidth = width * 0.85; 
+  const cardPadding = 20; 
+  const iconSize = 26; 
 
-  useEffect(() => {
-    setHash(generateRandomHash());
-  }, []);
+  const ActionCard = ({ title, icon, color, onPress }) => {
+    const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const generateRandomHash = () => {
-    return Math.random().toString(16).substring(2, 18).toUpperCase();
+    const onPressIn = () => Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true }).start();
+    const onPressOut = () => {
+      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start(() => onPress());
+    };
+
+    const textColor = color === '#FFF' ? '#4E90FF' : '#fff';
+    const iconColor = color === '#FFF' ? '#4E90FF' : '#fff';
+
+    return (
+      <TouchableOpacity activeOpacity={1} onPressIn={onPressIn} onPressOut={onPressOut}>
+        <Animated.View
+          style={[
+            styles.card,
+            { backgroundColor: color, width: cardWidth, paddingVertical: cardPadding, transform: [{ scale: scaleAnim }] },
+          ]}
+        >
+          <Ionicons name={icon} size={iconSize} color={iconColor} style={{ marginBottom: 8 }} />
+          <Text style={[styles.cardText, { color: textColor }]}>{title}</Text>
+        </Animated.View>
+      </TouchableOpacity>
+    );
   };
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Jon Doe</Text>
-        <Text style={styles.hash}>{hash}</Text>
+        <Text style={styles.title}>Configurações</Text>
+        <Text style={styles.subtitle}>Gerencie sua carteira de forma segura e elegante</Text>
       </View>
 
-      <View style={styles.buttonsContainer}>
-        <View style={styles.grayButton}>
-          <Button 
-            title="Chaves da Carteira" 
-            color="#666" 
-            onPress={() => navigation.navigate('Key')} 
-          />
-        </View>
+      {/* Botões estáticos centralizados */}
+      <View style={styles.centerContainer}>
+        <ActionCard
+          title="Backup da Carteira"
+          icon="cloud-upload-outline"
+          color="#4E90FF"
+          onPress={() => navigation.navigate('WalletBackup')}
+        />
+        <ActionCard
+          title="Suporte"
+          icon="help-circle-outline"
+          color="#FFF"
+          onPress={() => navigation.navigate('Support')}
+        />
+        <ActionCard
+          title="Termos de Uso"
+          icon="document-text-outline"
+          color="#FFF"
+          onPress={() => navigation.navigate('TermsOfUse')}
+        />
+        <ActionCard
+          title="Excluir Carteira"
+          icon="trash-outline"
+          color="#FF5C5C"
+          onPress={() => navigation.navigate('DeleteScreen')}
+        />
+      </View>
 
-        <View style={styles.blueButton}>
-          <Button 
-            title="Backup da Carteira" 
-            color="#007BFF" 
-            onPress={() => navigation.navigate('WalletBackup')} 
-          />
-        </View>
-
-        <View style={styles.grayButton}>
-          <Button 
-            title="Excluir Carteira" 
-            color="#666" 
-            onPress={() => navigation.navigate('DeleteScreen')} 
-          />
-        </View>
+      {/* Rodapé */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Keyless © 2025</Text>
+        <Text style={styles.footerText}>Versão 1.0.0</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    backgroundColor: '#fff',
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F9FC',
   },
   header: {
+    paddingTop: 100, // espaço maior para Dynamic Island
+    paddingBottom: 20,
     alignItems: 'center',
-    marginTop: 110,
-    marginBottom: 60,
   },
-  title: { 
-    fontSize: 40, 
-    fontWeight: 'bold', 
-    marginBottom: 1, 
+  title: {
+    fontSize: 32, // título maior
+    fontWeight: '800',
+    color: '#4E90FF',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 6,
     textAlign: 'center',
   },
-  hash: { 
-    fontSize: 15, 
-    color: 'gray', 
-    marginTop: 4,
-    textAlign: 'center',
-    marginBottom: 10, 
-  },
-  buttonsContainer: {
-    alignItems: 'center',
+  centerContainer: {
+    position: 'absolute',
+    top: height / 4, // botões mais para cima
     width: '100%',
+    alignItems: 'center',
+    gap: 16,
   },
-  grayButton: {
-    marginVertical: 45,
-    borderRadius: 8,
-    overflow: 'hidden',
-    width: '80%',
-  },
-  blueButton: {
+  card: {
+    borderRadius: 16,
     marginVertical: 10,
-    borderRadius: 8,
-    overflow: 'hidden',
-    width: '80%',
-  }
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#AAA',
+  },
 });
