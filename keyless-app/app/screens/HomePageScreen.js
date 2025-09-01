@@ -7,8 +7,10 @@ export default function HomePageScreen({ navigation }) {
 
   const buttonAnim = new Animated.Value(1);
 
-  const handlePressIn = () => Animated.spring(buttonAnim, { toValue: 0.95, useNativeDriver: true }).start();
-  const handlePressOut = () => Animated.spring(buttonAnim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+  const handlePressIn = () =>
+    Animated.spring(buttonAnim, { toValue: 0.95, useNativeDriver: true }).start();
+  const handlePressOut = () =>
+    Animated.spring(buttonAnim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
 
   const ActionCard = ({ title, icon, onPress }) => (
     <Animated.View style={{ transform: [{ scale: buttonAnim }] }}>
@@ -40,6 +42,7 @@ export default function HomePageScreen({ navigation }) {
         <ActionCard title="Cadastrar" icon="person-add-outline" onPress={() => navigation.navigate('SignIn')} />
         <ActionCard title="Compartilhar" icon="share-social-outline" onPress={() => navigation.navigate('Share')} />
         <ActionCard title="Configurações" icon="settings-outline" onPress={() => navigation.navigate('WalletAction')} />
+        <ActionCard title="Validar credenciais" icon="checkmark-done-circle-outline" onPress={() => navigation.navigate('Validate')} />
       </View>
 
       {/* Placeholder futura seção */}

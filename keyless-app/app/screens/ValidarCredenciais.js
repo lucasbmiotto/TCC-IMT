@@ -1,71 +1,39 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import * as ExpoCamera from 'expo-camera';
 
-export default function ValidarCredenciais() {
-  return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Image
-        source={require('../../assets/keyless-logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+export default function TesteCamera() {
+  const [hasPermission, setHasPermission] = useState(null);
 
-      {/* Título */}
-      <Text style={styles.title}>Validar Credenciais</Text>
-      <Text style={styles.subtitle}>
-        Aponte a câmera para o QR code para validar suas credenciais
-      </Text>
+  const ativarCamera = async () => {
+    const { status } = await ExpoCamera.requestCameraPermissionsAsync();
+    setHasPermission(status === 'granted');
+  };
 
-      {/* Área simulada do QR code */}
-      <View style={styles.qrPlaceholder}>
-        <Text style={styles.qrText}>[Área do QR Code]</Text>
+  if (hasPermission === null) {
+    return (
+      <View style={styles.centered}>
+        <Text>Permissão ainda não concedida</Text>
+        <Button title="Ativar Câmera" onPress={ativarCamera} />
       </View>
+    );
+  }
+
+  if (hasPermission === false) {
+    return (
+      <View style={styles.centered}>
+        <Text>Sem permissão de câmera</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+      <ExpoCamera.Camera style={{ flex: 1 }} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f7f9fc',
-    alignItems: 'center',
-    padding: 24,
-  },
-  logo: {
-    width: 180,
-    height: 180,
-    marginTop: 40,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#007AFF',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#4b4b4b',
-    textAlign: 'center',
-    marginBottom: 40,
-    paddingHorizontal: 10,
-  },
-  qrPlaceholder: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: '#007AFF',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e6f0ff',
-  },
-  qrText: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
-
