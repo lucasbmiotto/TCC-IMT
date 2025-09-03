@@ -15,6 +15,12 @@ import KeyScreen from '../screens/KeyScreen';
 import DeleteScreen from '../screens/DeleteScreen';
 import DownloadWalletScreen from '../screens/WalletBackup';
 import ValidarCredenciais from '../screens/ValidarCredenciais';
+import CredentialDetailScreen from '../screens/CredentialDetailScreen';
+import ShareQRCodeScreen from '../screens/ShareQRCodeScreen';
+
+// 🚀 Novas telas adicionadas
+import SupportScreen from '../screens/SupportScreen';
+import TermsOfUseScreen from '../screens/TermsOfUseScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,7 +32,7 @@ export default function StackNavigator() {
       <Stack.Screen name="SeedPhrase" component={SeedPhraseScreen} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
-       <Stack.Screen name="Home" component={HomePageScreen} />
+      <Stack.Screen name="Home" component={HomePageScreen} />
       <Stack.Screen name="SignIn" component={SignInScreen} />
       <Stack.Screen name="Share" component={ShareScreen} />
       <Stack.Screen name="QRCode" component={QRCodeScreen} />
@@ -35,6 +41,15 @@ export default function StackNavigator() {
       <Stack.Screen name="DeleteScreen" component={DeleteScreen} />
       <Stack.Screen name="WalletBackup" component={DownloadWalletScreen} />
       <Stack.Screen name="ValidateCredentials" component={ValidarCredenciais} />
+
+      {/* 🚀 Novas rotas */}
+      <Stack.Screen name="Support" component={SupportScreen} />
+      <Stack.Screen name="TermsOfUse" component={TermsOfUseScreen} />
+      
+
+      <Stack.Screen name="CredentialDetail" component={CredentialDetailScreen} />
+      <Stack.Screen name="ShareQRCode" component={ShareQRCodeScreen} />
+
     </Stack.Navigator>
   );
 }

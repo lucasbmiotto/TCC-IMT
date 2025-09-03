@@ -5,9 +5,11 @@ import { saveDID } from '../utils/Storage';
 export default function WelcomeScreen({ navigation, route }) {
   const { seed } = route.params;
 
+  // Gera DID fake apenas como exemplo
   const fakeDID = `did:key:${Math.random().toString(36).substring(2, 12)}`;
 
   useEffect(() => {
+    // Salva o DID no armazenamento local
     saveDID(fakeDID);
 
     const timeout = setTimeout(() => {
