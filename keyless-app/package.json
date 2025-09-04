@@ -16,6 +16,7 @@
     "expo-barcode-scanner": "^13.0.1",
     "expo-camera": "~16.1.11",
     "expo-linear-gradient": "~14.1.5",
+    "expo-sharing": "~13.1.5",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
     "react-native": "0.79.2",
@@ -30,9 +31,9 @@
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-uuid": "^2.0.3",
     "react-native-vision-camera": "^4.7.1",
+    "react-native-webview": "^13.16.0",
     "uuid": "^11.1.0",
-    "vision-camera-code-scanner": "^0.2.0",
-    "expo-sharing": "~13.1.5"
+    "vision-camera-code-scanner": "^0.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

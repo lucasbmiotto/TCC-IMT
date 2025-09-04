@@ -55,14 +55,10 @@ export default function WalletBackupScreen({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Backup da Carteira</Text>
-      <Text style={styles.subtitle}>Salve sua carteira de forma segura e rápida.</Text>
-
       <TouchableOpacity style={styles.downloadButton} onPress={handleDownloadBackup}>
         <Ionicons name="cloud-download-outline" size={24} color="#fff" />
         <Text style={styles.downloadButtonText}>Baixar Backup</Text>
       </TouchableOpacity>
-
       <Text style={styles.note}>Mantenha este arquivo em local seguro.</Text>
     </ScrollView>
   );
@@ -75,19 +71,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#EAF2FB',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontSize: 34,
-    fontWeight: '900',
-    color: '#4E90FF',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#4E6E91',
-    marginBottom: 40,
-    textAlign: 'center',
   },
   downloadButton: {
     flexDirection: 'row',

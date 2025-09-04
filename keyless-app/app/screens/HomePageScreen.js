@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Animated, Alert, Clipboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getDID } from '../utils/Storage'; // Recupera o DID salvo
@@ -6,7 +6,7 @@ import { getDID } from '../utils/Storage'; // Recupera o DID salvo
 export default function HomePageScreen({ navigation }) {
   const [did, setDid] = useState('');
   const [activities, setActivities] = useState([]); // últimas atividades
-  const buttonAnim = new Animated.Value(1);
+  const buttonAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const loadDID = async () => {
@@ -70,10 +70,26 @@ export default function HomePageScreen({ navigation }) {
 
       {/* Action Cards */}
       <View style={styles.cardsContainer}>
-        <ActionCard title="Cadastrar" icon="person-add-outline" onPress={() => navigation.navigate('SignIn')} />
-        <ActionCard title="Compartilhar" icon="share-social-outline" onPress={() => navigation.navigate('Share')} />
-        <ActionCard title="Configurações" icon="settings-outline" onPress={() => navigation.navigate('WalletAction')} />
-        <ActionCard title="Validar credenciais" icon="checkmark-done-circle-outline" onPress={() => navigation.navigate('ValidateCredentials')} />
+        <ActionCard 
+          title="Cadastrar Credencial" 
+          icon="person-add-outline" 
+          onPress={() => navigation.navigate('SignIn')} 
+        />
+        <ActionCard 
+          title="Compartilhar" 
+          icon="share-social-outline" 
+          onPress={() => navigation.navigate('Share')} 
+        />
+        <ActionCard 
+          title="Configurações" 
+          icon="settings-outline" 
+          onPress={() => navigation.navigate('WalletAction')} 
+        />
+        <ActionCard 
+          title="Validar credenciais" 
+          icon="checkmark-done-circle-outline" 
+          onPress={() => navigation.navigate('ValidateCredentials')} 
+        />
       </View>
 
       {/* Últimas atividades */}

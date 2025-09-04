@@ -14,9 +14,22 @@ import { saveSeed } from '../utils/Storage';
 const generateSeed = () => {
   const words = [];
   const wordlist = [
-    'apple', 'car', 'blue', 'mountain', 'river', 'cloud',
-    'wallet', 'secure', 'open', 'trust', 'key', 'light',
+  'apple', 'car', 'blue', 'mountain', 'river', 'cloud', 'wallet', 'secure', 'open', 'trust', 'key', 'light',
+  'tree', 'sky', 'house', 'door', 'stone', 'fire', 'moon', 'star', 'sun', 'wind', 'leaf', 'rain',
+  'ocean', 'wave', 'sand', 'forest', 'bird', 'flower', 'pebble', 'crystal', 'mirror', 'glass', 'riverbank',
+  'mountainpeak', 'valley', 'clouds', 'storm', 'thunder', 'rainbow', 'island', 'beach', 'desert', 'canyon', 'hill', 'meadow',
+  'vine', 'root', 'branch', 'petal', 'bud', 'seed', 'sprout', 'sunlight', 'moonlight', 'twilight', 'dawn', 'dusk',
+  'echo', 'mist', 'fog', 'breeze', 'whisper', 'shadow', 'ember', 'spark', 'flame', 'candle', 'torch', 'gem',
+  'pearl', 'diamond', 'gold', 'silver', 'bronze', 'iron', 'steel', 'copper', 'coin', 'lock', 'chest', 'map',
+  'compass', 'book', 'scroll', 'ink', 'quill', 'paper', 'letter', 'aurora', 'nebula', 'galaxy', 'planet', 'asteroid',
+  'meteor', 'comet', 'satellite', 'rocket', 'space', 'orbit', 'gravity', 'vacuum', 'eclipse', 'horizon', 'sunrise', 'sunset',
+  'twilightzone', 'misty', 'shadowed', 'hidden', 'ancient', 'mystic', 'crimson', 'emerald', 'sapphire', 'obsidian', 'onyx',
+  'topaz', 'amethyst', 'ruby', 'jade', 'ivory', 'tower', 'stormcloud', 'lightning', 'thunderclap', 'gale', 'horizon',
+  'waterfall', 'lagoon', 'reef', 'cave', 'cliff', 'glacier', 'volcano', 'geyser', 'swamp', 'marsh', 'prairie'
   ];
+
+  
+
   for (let i = 0; i < 12; i++) {
     words.push(wordlist[Math.floor(Math.random() * wordlist.length)]);
   }

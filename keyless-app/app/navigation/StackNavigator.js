@@ -17,7 +17,7 @@ import DownloadWalletScreen from '../screens/WalletBackup';
 import ValidarCredenciais from '../screens/ValidarCredenciais';
 import CredentialDetailScreen from '../screens/CredentialDetailScreen';
 import ShareQRCodeScreen from '../screens/ShareQRCodeScreen';
-
+import LocalHelpScreen from '../screens/LocalHelpScreen';
 // 🚀 Novas telas adicionadas
 import SupportScreen from '../screens/SupportScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
@@ -49,7 +49,7 @@ export default function StackNavigator() {
 
       <Stack.Screen name="CredentialDetail" component={CredentialDetailScreen} />
       <Stack.Screen name="ShareQRCode" component={ShareQRCodeScreen} />
-
+      <Stack.Screen name="LocalHelp" component={LocalHelpScreen} />
     </Stack.Navigator>
   );
 }

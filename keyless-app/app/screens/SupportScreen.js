@@ -25,9 +25,12 @@ export default function SupportScreen({ navigation }) {
           <Text style={styles.optionText}>support@keyless.app</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.option} onPress={() => Linking.openURL('https://keyless.app/help')}>
-          <Ionicons name="globe-outline" size={24} color="#4E90FF" />
-          <Text style={styles.optionText}>Central de Ajuda</Text>
+        <TouchableOpacity
+            style={styles.option}
+            onPress={() => navigation.navigate('LocalHelp')}
+            >
+            <Ionicons name="globe-outline" size={24} color="#4E90FF" />
+        <Text style={styles.optionText}>Central de Ajuda</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.option} onPress={() => navigation.goBack()}>
