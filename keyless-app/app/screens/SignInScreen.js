@@ -20,7 +20,7 @@ export default function SignInScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Top Logo */}
+      {/* Logo */}
       <View style={styles.logoWrapper}>
         <Image
           source={require('../../assets/keyless-notext.png')}
@@ -29,13 +29,14 @@ export default function SignInScreen({ navigation }) {
         />
       </View>
 
-      {/* Card com textos e único botão centralizado */}
+      {/* Cartão */}
       <View style={styles.card}>
         <Text style={styles.title}>Proteja suas Credenciais</Text>
         <Text style={styles.subtitle}>
           Sua carteira digital com segurança de alto nível, privacidade garantida e total controle.
         </Text>
 
+        {/* Botão animado */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={styles.button}
@@ -48,9 +49,9 @@ export default function SignInScreen({ navigation }) {
               name="cloud-download-outline"
               size={28}
               color="#FFF"
-              style={{ marginRight: 10 }} // ícone levemente à esquerda
+              style={{ marginRight: 12 }}
             />
-            <Text style={styles.buttonText}>Importar credencial</Text>
+            <Text style={styles.buttonText}>Importar Credencial</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -61,58 +62,65 @@ export default function SignInScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#EAF2FB',
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
   logoWrapper: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 50,
   },
   logo: {
     width: 180,
     height: 180,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 30,
+    backgroundColor: '#FFF',
+    borderRadius: 28,
+    padding: 35,
     shadowColor: '#4E90FF',
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 10,
-    elevation: 4,
+    shadowRadius: 12,
+    elevation: 6,
     alignItems: 'center',
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
     color: '#0F4C81',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#6B7A99',
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 35,
+    lineHeight: 24,
+    marginBottom: 40,
     paddingHorizontal: 10,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // centraliza texto e ícone
+    justifyContent: 'center',
     backgroundColor: '#4E90FF',
-    paddingVertical: 20,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
     borderRadius: 30,
-    width: '100%',
+    width: '95%',
+    maxWidth: 400,
     elevation: 5,
+    shadowColor: '#4E90FF',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 10,
   },
   buttonText: {
     color: '#FFF',
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '700',
     textAlign: 'center',
+    flexShrink: 1, // evita que o texto saia do botão
   },
 });
