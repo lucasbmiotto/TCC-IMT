@@ -1,75 +1,98 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function KeysScreen() {
   const [showPrivate, setShowPrivate] = useState(false);
   const [showPublic, setShowPublic] = useState(false);
+  const buttonAnimPrivate = new Animated.Value(1);
+  const buttonAnimPublic = new Animated.Value(1);
+
+  const animatePressIn = (anim) => {
+    Animated.spring(anim, { toValue: 0.95, useNativeDriver: true }).start();
+  };
+
+  const animatePressOut = (anim) => {
+    Animated.spring(anim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+  };
+
+  const renderKeyCard = (label, value, show, setShow, anim) => (
+    <View style={styles.card}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputRow}>
+        <TextInput
+          secureTextEntry={!show}
+          style={styles.input}
+          editable={false}
+          value={value}
+        />
+        <Animated.View style={{ transform: [{ scale: anim }] }}>
+          <TouchableOpacity
+            onPress={() => setShow(!show)}
+            onPressIn={() => animatePressIn(anim)}
+            onPressOut={() => animatePressOut(anim)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name={show ? "eye-off" : "eye"} size={28} color="#4E90FF" />
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Suas Chaves</Text>
-
-      <Text style={styles.label}>Chave Privada</Text>
-      <View style={styles.inputRow}>
-        <TextInput
-          secureTextEntry={!showPrivate}
-          style={styles.input}
-          editable={false}
-          value="48129ufdsfjoav1948903"
-        />
-        <TouchableOpacity onPress={() => setShowPrivate(!showPrivate)}>
-          <Ionicons name={showPrivate ? "eye-off" : "eye"} size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.label}>Chave Pública</Text>
-      <View style={styles.inputRow}>
-        <TextInput
-          secureTextEntry={!showPublic}
-          style={styles.input}
-          editable={false}
-          value="78174ufhdsjn813yr802"
-        />
-        <TouchableOpacity onPress={() => setShowPublic(!showPublic)}>
-          <Ionicons name={showPublic ? "eye-off" : "eye"} size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
+      {renderKeyCard("Chave Privada", "48129ufdsfjoav1948903", showPrivate, setShowPrivate, buttonAnimPrivate)}
+      {renderKeyCard("Chave Pública", "78174ufhdsjn813yr802", showPublic, setShowPublic, buttonAnimPublic)}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 25,
-    backgroundColor: '#b2a9a9',
     flex: 1,
+    backgroundColor: '#F7F9FC',
+    padding: 24,
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'center',
+    color: '#4E90FF',
     marginBottom: 40,
+  },
+  card: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
   },
   label: {
     fontSize: 16,
-    marginTop: 20,
-    marginBottom: 5,
+    fontWeight: '600',
+    color: '#0F4C81',
+    marginBottom: 10,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#444',
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#eee',
+    borderColor: '#B0C4DE',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#F0F5FF',
   },
   input: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 16,
     letterSpacing: 2,
+    color: '#333',
   },
 });
