@@ -1,14 +1,18 @@
-import CredentialForm from "./components/CredentialForm";
-import CredentialList from "./components/CredentialList";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import HomePage from '@/pages/HomePage';
+import HistoryPage from '@/pages/HistoryPage';
+import { Toaster } from '@/components/ui/toaster';
 
 function App() {
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Stampfy</h1>
-      <CredentialForm />
-      <hr className="my-6" />
-      <CredentialList />
-    </div>
+    <>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/historico" element={<HistoryPage />} />
+      </Routes>
+      <Toaster />
+    </>
   );
 }
 
