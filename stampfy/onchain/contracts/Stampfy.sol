@@ -11,41 +11,16 @@ contract Stampfy {
         address issuer;
     }
 
-    Credential[] public credentials;
-
-    event CredentialRegistered(
-        string hash,
-        string credType,
-        string ownerDID,
-        string issuerDID,
-        uint256 timestamp,
-        address issuer
-    );
+    Credential[] private credentials;
 
     function registerCredential(
-        string memory _hash,
-        string memory _credType,
-        string memory _ownerDID,
-        string memory _issuerDID
+        string memory hash,
+        string memory credType,
+        string memory ownerDID,
+        string memory issuerDID
     ) public {
-        Credential memory newCredential = Credential({
-            hash: _hash,
-            credType: _credType,
-            ownerDID: _ownerDID,
-            issuerDID: _issuerDID,
-            timestamp: block.timestamp,
-            issuer: msg.sender
-        });
-
-        credentials.push(newCredential);
-
-        emit CredentialRegistered(
-            _hash,
-            _credType,
-            _ownerDID,
-            _issuerDID,
-            block.timestamp,
-            msg.sender
+        credentials.push(
+            Credential(hash, credType, ownerDID, issuerDID, block.timestamp, msg.sender)
         );
     }
 

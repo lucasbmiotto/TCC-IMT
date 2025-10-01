@@ -10,6 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DynamicFormFields, { documentFieldsConfig } from '@/components/DynamicFormFields';
 import { FileUp, Send, FileText, CheckCircle, Fingerprint, FileType, History } from 'lucide-react';
+import { ethers } from "ethers";
+import stampfyAbi from "@/abi/Stampfy.json";
+
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
+const RPC_URL = import.meta.env.VITE_RPC_URL;
+const PRIVATE_KEY = import.meta.env.VITE_PRIVATE_KEY;
 
 const documentTypeLabels = {
   rg: 'RG (Identidade)',
@@ -29,7 +35,7 @@ function HomePage() {
   
   const handleDocumentTypeChange = (value) => {
     setDocumentType(value);
-    setFormData({}); // Reset form data when type changes
+    setFormData({});
     setSelectedFile(null);
   };
   
@@ -52,45 +58,78 @@ function HomePage() {
     }
   };
 
-  const handleRegisterClick = () => {
-    const newRecord = {
-      id: Date.now(),
-      documentType,
-      documentLabel: documentTypeLabels[documentType] || 'Documento',
-      did: formData.did,
-      fileName: selectedFile.name,
-      timestamp: new Date().toISOString(),
-      details: { ...formData }
+  const handleRegisterClick = async () => {
+  try {
+    if (!selectedFile || !documentType || !formData.did) return;
+
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+    const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, stampfyAbi.abi, wallet);
+
+    // ✅ Gera hash único do arquivo + timestamp
+    const fileHash = ethers.id(selectedFile.name + Date.now());
+
+    // envia pra blockchain
+    const tx = await contract.registerCredential(
+      fileHash,
+      documentTypeLabels[documentType],
+      formData.did,
+      "did:issuer:stampfy"
+    );
+    await tx.wait();
+
+    // ✅ Salva o registro completo localmente
+    const saved = JSON.parse(localStorage.getItem("credentials") || "[]");
+
+    const credentialRecord = {
+      id: saved.length + 1,
+      onChain: {
+        hash: fileHash, // mesmo hash que foi enviado à blockchain
+        credType: documentTypeLabels[documentType],
+        ownerDID: formData.did,
+        issuerDID: "did:issuer:stampfy",
+        issuer: wallet.address,
+        timestamp: new Date().toISOString(),
+      },
+      credentialData: {
+        type: documentTypeLabels[documentType],
+        ownerDID: formData.did,
+        issuerDID: "did:issuer:stampfy",
+        fileName: selectedFile.name,
+        fileType: selectedFile.type,
+        fields: formData,
+        timestamp: new Date().toISOString(),
+      },
+      used: false,
     };
 
-    try {
-      const existingRecords = JSON.parse(localStorage.getItem('stampfy_records')) || [];
-      localStorage.setItem('stampfy_records', JSON.stringify([newRecord, ...existingRecords]));
-      
-      toast({
-        title: 'Registro bem-sucedido! 🎉',
-        description: `O documento foi registrado com sucesso.`,
-      });
+    saved.push(credentialRecord);
+    localStorage.setItem("credentials", JSON.stringify(saved));
 
-      // Reset form
-      setDocumentType('');
-      setFormData({});
-      setSelectedFile(null);
+    toast({
+      title: "Registro bem-sucedido! 🎉",
+      description: `Tx hash: ${tx.hash}`,
+    });
 
-    } catch (error) {
-      toast({
-        title: 'Erro ao registrar 😢',
-        description: 'Não foi possível salvar o registro. Por favor, tente novamente.',
-        variant: 'destructive',
-      });
-    }
-  };
+    setDocumentType("");
+    setFormData({});
+    setSelectedFile(null);
+  } catch (error) {
+    console.error("Erro ao registrar:", error);
+    toast({
+      title: "Erro ao registrar",
+      description: error.message,
+      variant: "destructive",
+    });
+  }
+};
+
 
   const isFormComplete = useMemo(() => {
     if (!documentType || !selectedFile) return false;
     const requiredFields = documentFieldsConfig[documentType] || [];
     if (!requiredFields.every(field => formData[field.id] && formData[field.id].trim() !== '')) return false;
-    if(!formData.did || formData.did.trim() === '') return false;
+    if (!formData.did || formData.did.trim() === '') return false;
     return true;
   }, [documentType, formData, selectedFile]);
   
@@ -99,40 +138,29 @@ function HomePage() {
       <Helmet>
         <title>Stampfy - Registro de Documentos</title>
         <meta name="description" content="Uma plataforma simples e moderna para registrar seus documentos com segurança." />
-        <meta property="og:title" content="Stampfy - Registro de Documentos" />
-        <meta property="og:description" content="Uma plataforma simples e moderna para registrar seus documentos com segurança." />
       </Helmet>
       
       <main className="flex flex-col items-center justify-center min-h-screen p-4 relative overflow-hidden">
         <div className="absolute top-0 left-0 -translate-x-1/4 -translate-y-1/4 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-lg z-10"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }} className="w-full max-w-lg z-10">
           <Card>
             <CardHeader className="text-center">
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              >
+              <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
                 <div className="inline-block p-3 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full mb-4">
                   <FileUp className="w-8 h-8 text-white" />
                 </div>
                 <CardTitle className="gradient-text text-4xl font-bold">Stampfy</CardTitle>
-                <CardDescription className="mt-2 text-lg">
-                  Plataforma de registro de documentos.
-                </CardDescription>
+                <CardDescription className="mt-2 text-lg">Plataforma de registro de documentos.</CardDescription>
               </motion.div>
             </CardHeader>
             <CardContent className="p-8">
               <div className="space-y-6">
                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.5 }} className="space-y-2">
-                  <Label htmlFor="doc-type" className="flex items-center gap-2"><FileType className="w-4 h-4" />Tipo de Documento</Label>
+                  <Label htmlFor="doc-type" className="flex items-center gap-2">
+                    <FileType className="w-4 h-4" />Tipo de Documento
+                  </Label>
                   <Select onValueChange={handleDocumentTypeChange} value={documentType}>
                     <SelectTrigger id="doc-type">
                       <SelectValue placeholder="Selecione o tipo..." />
@@ -153,7 +181,9 @@ function HomePage() {
                           <DynamicFormFields documentType={documentType} formData={formData} onDataChange={handleFormDataChange} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="did" className="flex items-center gap-2"><Fingerprint className="w-4 h-4" />DID da Pessoa</Label>
+                            <Label htmlFor="did" className="flex items-center gap-2">
+                              <Fingerprint className="w-4 h-4" />DID da Pessoa
+                            </Label>
                             <Input id="did" placeholder="did:example:123456789abcdefghi" value={formData.did || ''} onChange={(e) => handleFormDataChange('did', e.target.value)} />
                         </div>
                         <div className="flex flex-col items-center">
@@ -176,6 +206,7 @@ function HomePage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+
                 <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.5 }}>
                   <Button onClick={handleRegisterClick} className="w-full text-lg py-6 font-semibold" size="lg" disabled={!isFormComplete}>
                     <Send className="mr-2 h-5 w-5" />Registrar

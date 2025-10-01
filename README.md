@@ -1,29 +1,9 @@
-<p align="center">
-  <img src="./assets/keyless-banner.png" alt="Keyless Banner" />
-</p>
+## Para rodar:
 
-# Keyless
-
-**Keyless** é uma carteira de identidade digital descentralizada baseada em blockchain e Self-Sovereign Identity (SSI).  
-O projeto tem como objetivo permitir que usuários tenham controle total sobre suas credenciais, com foco em privacidade, segurança e conformidade com a LGPD/GDPR.
-
-## 🚀 Funcionalidades
-
-- Criação e gestão de DIDs (Decentralized Identifiers)  
-- Emissão e verificação de credenciais verificáveis (VCs)  
-- Autenticação descentralizada  
-- Armazenamento seguro via carteira digital  
-- Integração com blockchain para ancoragem de identidade  
-
-## 🛠️ Tecnologias utilizadas
-
-- React Native: Desenvolvimento mobile cross-platform
-- Expo Go: Execução e testes rápidos no ambiente mobile 
-- Ethereum: Blockchain utilizada para identidade descentralizada 
-- Ganache: Blockchain local para testes
-- HardHat: Framework de desenvolvimento de smart contracts
-- Figma: Prototipação de Telas
-
-## 🎓 Projeto acadêmico
-
-Este projeto faz parte do Trabalho de Conclusão de Curso (TCC) de Ciência da Computação no Instituto Mauá de Tecnologia — 2024..
+1- Abra o ganache e incie ele
+2- entre no stampfy onchain e rode: npm install
+3- no onchain, rode o deploy do script: npx hardhat run scripts/deploy.js --network ganache
+4- pegue o contrato retornado
+5- va para o stampfy-ui e rode: npm install
+6- abra o arquivo .env e adicione os variaveis
+7- rode o projeto do stampfy com: npm run dev
