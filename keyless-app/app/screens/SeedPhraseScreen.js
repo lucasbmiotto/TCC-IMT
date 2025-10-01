@@ -9,7 +9,7 @@ import {
   ToastAndroid,
   Platform,
 } from 'react-native';
-import { saveSeed } from '../utils/Storage';
+import { saveSeed } from '../utils/storage';
 
 const generateSeed = () => {
   const words = [];

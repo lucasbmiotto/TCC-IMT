@@ -4,8 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const PASSWORD_KEY = '@keyless_password';
 const SEED_KEY = '@keyless_seed';
 const DID_KEY = '@keyless_did';
+const CREDENTIALS_KEY = '@keyless_credentials';
 
-// Salvar dados
+// ----------------------
+// Senha / Seed / DID
+// ----------------------
 export const savePassword = async (password) => {
   await AsyncStorage.setItem(PASSWORD_KEY, password);
 };
@@ -18,7 +21,6 @@ export const saveDID = async (did) => {
   await AsyncStorage.setItem(DID_KEY, did);
 };
 
-// Recuperar dados
 export const getPassword = async () => {
   return await AsyncStorage.getItem(PASSWORD_KEY);
 };
@@ -31,7 +33,37 @@ export const getDID = async () => {
   return await AsyncStorage.getItem(DID_KEY);
 };
 
-// Apagar tudo (útil pra testes/reset)
+// ----------------------
+// Credenciais
+// ----------------------
+export const saveCredential = async (credential) => {
+  try {
+    const stored = await AsyncStorage.getItem(CREDENTIALS_KEY);
+    const parsed = stored ? JSON.parse(stored) : [];
+    parsed.push(credential);
+    await AsyncStorage.setItem(CREDENTIALS_KEY, JSON.stringify(parsed));
+  } catch (e) {
+    console.error('Erro ao salvar credencial:', e);
+  }
+};
+
+export const getCredentials = async () => {
+  try {
+    const stored = await AsyncStorage.getItem(CREDENTIALS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    console.error('Erro ao carregar credenciais:', e);
+    return [];
+  }
+};
+
+export const clearCredentials = async () => {
+  await AsyncStorage.removeItem(CREDENTIALS_KEY);
+};
+
+// ----------------------
+// Reset geral
+// ----------------------
 export const clearStorage = async () => {
-  await AsyncStorage.multiRemove([PASSWORD_KEY, SEED_KEY, DID_KEY]);
+  await AsyncStorage.multiRemove([PASSWORD_KEY, SEED_KEY, DID_KEY, CREDENTIALS_KEY]);
 };

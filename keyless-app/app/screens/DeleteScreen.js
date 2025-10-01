@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Animated,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 export default function KeysScreen() {
@@ -10,10 +18,28 @@ export default function KeysScreen() {
   const handleDelete = () => {
     Alert.alert(
       'Confirmação',
-      'Deseja realmente excluir as chaves?',
+      'Deseja realmente excluir as chaves da sua carteira? Essa ação é irreversível.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: () => console.log('Chaves excluídas') },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await AsyncStorage.multiRemove([
+                '@keyless_password',
+                '@keyless_seed',
+                'userData',
+                'did',
+              ]);
+              console.log('Dados da carteira excluídos');
+              navigation.replace('Splash');
+            } catch (e) {
+              console.error('Erro ao excluir dados:', e);
+              Alert.alert('Erro', 'Não foi possível excluir os dados.');
+            }
+          },
+        },
       ]
     );
   };
@@ -32,7 +58,9 @@ export default function KeysScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>TEM CERTEZA QUE DESEJA EXCLUIR OS DADOS DE SUA CARTEIRA?</Text>
+      <Text style={styles.title}>
+        TEM CERTEZA QUE DESEJA EXCLUIR OS DADOS DE SUA CARTEIRA?
+      </Text>
 
       <View style={styles.buttonsRow}>
         <Animated.View style={{ transform: [{ scale: buttonAnimDelete }] }}>
@@ -69,14 +97,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F7F9FC', // Fundo claro
+    backgroundColor: '#F7F9FC',
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
     textAlign: 'center',
     marginBottom: 60,
-    color: '#0F4C81', // Azul Keyless
+    color: '#0F4C81',
   },
   buttonsRow: {
     flexDirection: 'row',
@@ -85,7 +113,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   deleteButton: {
-    backgroundColor: '#FF4D4F', // Vermelho de exclusão
+    backgroundColor: '#FF4D4F',
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 24,
@@ -95,7 +123,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   backButton: {
-    backgroundColor: '#4E90FF', // Azul Keyless
+    backgroundColor: '#4E90FF',
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 24,
