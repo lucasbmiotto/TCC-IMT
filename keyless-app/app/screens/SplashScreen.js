@@ -1,55 +1,61 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
   Animated,
   Easing,
   StatusBar,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SplashScreen({ navigation }) {
-  // Animações
+  const [hasUser, setHasUser] = useState(null); // null = carregando, false = novo usuário
+
   const fade = useRef(new Animated.Value(0)).current;
-  const slideUp = useRef(new Animated.Value(12)).current;
-  const logoScale = useRef(new Animated.Value(0.92)).current;
-  const primaryScale = useRef(new Animated.Value(1)).current;
+  const slideUp = useRef(new Animated.Value(20)).current;
+  const logoScale = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fade, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(fade, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: true,
+      }),
       Animated.timing(slideUp, {
         toValue: 0,
-        duration: 500,
+        duration: 1200,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(logoScale, {
         toValue: 1,
-        duration: 700,
+        duration: 1500,
         easing: Easing.out(Easing.elastic(1)),
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      checkUser();
+    });
   }, []);
 
-  const onPressIn = () => {
-    Animated.spring(primaryScale, {
-      toValue: 0.98,
-      friction: 6,
-      tension: 200,
-      useNativeDriver: true,
-    }).start();
-  };
-  const onPressOut = () => {
-    Animated.spring(primaryScale, {
-      toValue: 1,
-      friction: 6,
-      tension: 200,
-      useNativeDriver: true,
-    }).start();
+  const checkUser = async () => {
+    try {
+      const user = await AsyncStorage.getItem('userData');
+      const parsed = JSON.parse(user);
+      console.log('userData encontrado:', parsed);
+
+      if (parsed?.hasWallet) {
+        navigation.replace('ValidateCredentialLogin');
+      } else {
+        setHasUser(false); // mostra botões
+      }
+    } catch (e) {
+      console.log('Erro ao verificar usuário:', e);
+      setHasUser(false);
+    }
   };
 
   return (
@@ -60,50 +66,30 @@ export default function SplashScreen({ navigation }) {
         source={require('../../assets/keyless-logo.png')}
         style={[styles.logo, { transform: [{ scale: logoScale }] }]}
         resizeMode="contain"
-        accessible
-        accessibilityLabel="Logo Keyless"
       />
 
       <Animated.View style={{ opacity: fade, transform: [{ translateY: slideUp }] }}>
         <Text style={styles.title}>Bem-vindo ao Keyless</Text>
       </Animated.View>
 
-      <View style={styles.buttons}>
-        {/* Botão Criar Carteira */}
-        <Animated.View style={{ transform: [{ scale: primaryScale }] }}>
+      {/* Botões de ação para novo usuário */}
+      {hasUser === false && (
+        <View style={styles.buttons}>
           <TouchableOpacity
             style={styles.primaryButton}
-            activeOpacity={0.9}
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
             onPress={() => navigation.navigate('CreateWallet')}
-            accessibilityRole="button"
-            accessibilityLabel="Criar Carteira"
           >
             <Text style={styles.primaryText}>Criar Carteira</Text>
           </TouchableOpacity>
-        </Animated.View>
 
-        {/* Botão Importar Carteira (desabilitado) */}
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          disabled
-          accessibilityRole="button"
-          accessibilityLabel="Importar Carteira (desabilitado)"
-        >
-          <Text style={styles.secondaryText}>Importar Carteira</Text>
-        </TouchableOpacity>
-
-        {/* Novo Botão: Validar Credenciais */}
-        <TouchableOpacity
-          style={styles.validateButton}
-          onPress={() => navigation.navigate('ValidateCredentials')}
-          accessibilityRole="button"
-          accessibilityLabel="Validar Credenciais"
-        >
-          <Text style={styles.validateText}>Validar Credenciais</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => navigation.navigate('ImportWallet')}
+          >
+            <Text style={styles.secondaryText}>Importar Carteira</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -128,22 +114,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#0f172a',
     textAlign: 'center',
-    letterSpacing: 0.2,
     marginBottom: 12,
   },
   buttons: {
     width: '100%',
-    marginTop: 20,
+    marginTop: 30,
   },
   primaryButton: {
     backgroundColor: BLUE,
     paddingVertical: 16,
     borderRadius: 14,
-    shadowColor: BLUE,
-    shadowOpacity: 0.28,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-    elevation: 8,
+    marginBottom: 14,
   },
   primaryText: {
     color: '#fff',
@@ -152,7 +133,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   secondaryButton: {
-    marginTop: 14,
     backgroundColor: '#eef4ff',
     paddingVertical: 16,
     borderRadius: 14,
@@ -161,20 +141,6 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     color: '#5b708f',
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  validateButton: {
-    marginTop: 14,
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#c1c1c1',
-  },
-  validateText: {
-    color: '#0f172a',
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',

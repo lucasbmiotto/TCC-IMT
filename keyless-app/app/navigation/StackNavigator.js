@@ -18,6 +18,8 @@ import ValidarCredenciais from '../screens/ValidarCredenciais';
 import CredentialDetailScreen from '../screens/CredentialDetailScreen';
 import ShareQRCodeScreen from '../screens/ShareQRCodeScreen';
 import LocalHelpScreen from '../screens/LocalHelpScreen';
+import ValidateCredentialsScreen from '../screens/ValidateCredentialsScreen';
+
 // 🚀 Novas telas adicionadas
 import SupportScreen from '../screens/SupportScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
@@ -41,6 +43,7 @@ export default function StackNavigator() {
       <Stack.Screen name="DeleteScreen" component={DeleteScreen} />
       <Stack.Screen name="WalletBackup" component={DownloadWalletScreen} />
       <Stack.Screen name="ValidateCredentials" component={ValidarCredenciais} />
+      <Stack.Screen name="ValidateCredentialLogin" component={ValidateCredentialsScreen} />
 
       {/* 🚀 Novas rotas */}
       <Stack.Screen name="Support" component={SupportScreen} />
