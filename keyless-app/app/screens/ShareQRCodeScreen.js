@@ -1,82 +1,38 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
-import QRCode from "react-native-qrcode-svg";
+import React from 'react';
+import { View, Text, Button, Alert } from 'react-native';
+import { saveQRCodeData, getAllCredentials } from '../utils/QRCodeToSQLite';
 
-export default function ShareQRCodeScreen({ route, navigation }) {
-  const { credentialTitle, selectedFields } = route.params;
+export default function ShareQRCodeScreen({ navigation }) {
+  // Exemplo de conteúdo JSON do QRCode
+  const qrValue = JSON.stringify({
+    credentialTitle: "CNH",
+    fields: {
+      nome: "João da Silva",
+      numero: "123456789",
+      validade: "2028-12-31"
+    },
+    timestamp: Date.now()
+  });
 
-  const [timer, setTimer] = useState(5 * 60); // 5 minutos em segundos
-  const [qrValue, setQrValue] = useState("");
-
-  useEffect(() => {
-    // Gera o QR Code como string JSON criptografada ou simples
-    const qrData = {
-      credentialTitle,
-      fields: selectedFields,
-      timestamp: Date.now()
-    };
-    setQrValue(JSON.stringify(qrData));
-
-    // Timer regressivo
-    const interval = setInterval(() => {
-      setTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          Alert.alert("QR Code expirado", "O QR Code expirou, gere novamente.");
-          navigation.goBack();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Simulação: QR Code foi escaneado
-  const handleScanned = () => {
-    Alert.alert("Compartilhamento realizado", "Seus dados foram compartilhados com sucesso ✅");
-    navigation.navigate("Home");
+  const handleSimulateScan = () => {
+    saveQRCodeData(qrValue);
+    Alert.alert("Sucesso", "Dados do QRCode salvos no banco!");
   };
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-    const s = (seconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
+  const handleShowCredentials = () => {
+    getAllCredentials((list) => {
+      Alert.alert("Registros no banco", JSON.stringify(list, null, 2));
+    });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Compartilhamento seguro</Text>
-      <Text style={styles.subtitle}>QR Code válido por: {formatTime(timer)}</Text>
-
-      {qrValue !== "" && (
-        <QRCode
-          value={qrValue}
-          size={250}
-          color="#4E90FF"
-          backgroundColor="#EAF2FB"
-        />
-      )}
-
-      <TouchableOpacity style={styles.scanButton} onPress={handleScanned}>
-        <Text style={styles.scanButtonText}>Simular Escaneamento</Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 20, marginBottom: 24 }}>Simular Scan de QRCode</Text>
+      <Button title="Simular Scan e Salvar" onPress={handleSimulateScan} />
+      <View style={{ height: 16 }} />
+      <Button title="Mostrar Registros Salvos" onPress={handleShowCredentials} />
+      <View style={{ height: 16 }} />
+      <Button title="Voltar" onPress={() => navigation.goBack()} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EAF2FB", alignItems: "center", justifyContent: "center", padding: 20 },
-  title: { fontSize: 28, fontWeight: "800", color: "#4E90FF", marginBottom: 12, textAlign: "center" },
-  subtitle: { fontSize: 16, color: "#6B7A99", marginBottom: 24, textAlign: "center" },
-  scanButton: {
-    marginTop: 30,
-    backgroundColor: "#4E90FF",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    alignItems: "center"
-  },
-  scanButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 }
-});
