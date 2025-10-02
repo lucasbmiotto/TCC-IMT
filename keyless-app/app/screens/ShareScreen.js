@@ -1,33 +1,35 @@
-import React, { useRef } from "react";
-import { 
-  View, 
-  Text, 
-  TouchableWithoutFeedback, 
-  StyleSheet, 
-  ScrollView, 
-  Animated 
+import React, { useEffect, useState, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableWithoutFeedback,
+  StyleSheet,
+  ScrollView,
+  Animated,
+  TouchableOpacity,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getCredentials } from "../utils/storage";
 
 export default function CredentialsScreen({ navigation }) {
-  const credentials = [
-    { id: "cnh", title: "CNH", description: "Carteira Nacional de Habilitação", icon: "car" },
-    { id: "rg", title: "RG", description: "Documento de identidade", icon: "id-card" },
-    { id: "certificados", title: "Certificados", description: "Cursos e conquistas pessoais", icon: "school" },
-    { id: "passaporte", title: "Passaporte", description: "Documento para viagens internacionais", icon: "airplane" },
-    { id: "titulo_eleitor", title: "Título de Eleitor", description: "Registro eleitoral digital", icon: "ballot" },
-    { id: "cpf", title: "CPF", description: "Cadastro de Pessoa Física seguro", icon: "finger-print" },
-    { id: "cartao_saude", title: "Cartão de Saúde", description: "Planos médicos e vacinas", icon: "medkit" },
-    { id: "carteira_trabalho", title: "Carteira de Trabalho", description: "Histórico profissional", icon: "briefcase" },
-    { id: "cartao_estudante", title: "Carteira Estudantil", description: "Identificação estudantil", icon: "school-outline" },
-    { id: "pis", title: "PIS/PASEP", description: "Número de inscrição social", icon: "document-text" },
-    { id: "residencia", title: "Comprovante de Residência", description: "Endereço atualizado", icon: "home" },
-    { id: "transporte", title: "Cartão de Transporte", description: "Bilhete único e passes digitais", icon: "bus" },
-  ];
+  const [credentials, setCredentials] = useState([]);
 
-  const handlePress = (id) => {
-    navigation.navigate("CredentialDetail", { credentialId: id });
+  useEffect(() => {
+    const load = async () => {
+      const creds = await getCredentials();
+      setCredentials(creds);
+    };
+    const unsubscribe = navigation.addListener("focus", load);
+    return unsubscribe;
+  }, [navigation]);
+
+  const handlePress = (cred) => {
+    navigation.navigate("CredentialDetail", { credential: cred });
+  };
+
+  const handleShare = (cred) => {
+    navigation.navigate("ShareCredential", { credential: cred });
   };
 
   const AnimatedCard = ({ cred }) => {
@@ -45,23 +47,39 @@ export default function CredentialsScreen({ navigation }) {
         toValue: 1,
         friction: 4,
         useNativeDriver: true,
-      }).start(() => handlePress(cred.id));
+      }).start(() => handlePress(cred));
     };
 
     return (
       <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           <View style={styles.cardHeader}>
-            <Ionicons name={cred.icon} size={26} color="#4E90FF" style={{ marginRight: 10 }} />
+            <Ionicons
+              name={cred.icon || "document-text-outline"}
+              size={26}
+              color="#4E90FF"
+              style={{ marginRight: 10 }}
+            />
             <Text style={styles.cardTitle}>{cred.title}</Text>
             <View style={styles.securityBadge}>
               <MaterialCommunityIcons name="shield-check" size={16} color="#fff" />
             </View>
           </View>
           <Text style={styles.cardDescription}>{cred.description}</Text>
+
           <View style={styles.cardFooter}>
-            <Text style={styles.cardAction}>Acessar</Text>
-            <Ionicons name="chevron-forward" size={20} color="#4E90FF" />
+            <TouchableOpacity
+              style={styles.shareButton}
+              onPress={() => handleShare(cred)}
+            >
+              <Ionicons name="qr-code-outline" size={18} color="#FFF" />
+              <Text style={styles.shareButtonText}>Compartilhar</Text>
+            </TouchableOpacity>
+
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.cardAction}>Acessar</Text>
+              <Ionicons name="chevron-forward" size={20} color="#4E90FF" />
+            </View>
           </View>
         </Animated.View>
       </TouchableWithoutFeedback>
@@ -70,31 +88,29 @@ export default function CredentialsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Suas credenciais</Text>
-        <Text style={styles.subtitle}>Tudo o que importa, guardado com segurança premium</Text>
+        <Text style={styles.subtitle}>
+          Tudo o que importa, guardado com segurança premium
+        </Text>
       </View>
 
-      {/* Cards */}
       <ScrollView contentContainerStyle={styles.cardsWrapper} showsVerticalScrollIndicator={false}>
-        {credentials.map((cred) => (
-          <AnimatedCard key={cred.id} cred={cred} />
-        ))}
+        {credentials.length === 0 ? (
+          <Text style={{ textAlign: "center", color: "#666" }}>
+            Nenhuma credencial cadastrada ainda. Escaneie um QR para começar.
+          </Text>
+        ) : (
+          credentials.map((cred) => <AnimatedCard key={cred.id} cred={cred} />)
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F7F9FC",
-  },
-  header: {
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
+  safeArea: { flex: 1, backgroundColor: "#F7F9FC" },
+  header: { paddingHorizontal: 24, marginBottom: 16 },
   title: {
     fontSize: 30,
     fontWeight: "800",
@@ -103,17 +119,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 6,
   },
-  subtitle: {
-    fontSize: 15,
-    textAlign: "center",
-    color: "#555",
-    marginBottom: 20,
-  },
-  cardsWrapper: {
-    paddingHorizontal: 24,
-    paddingBottom: 30,
-    gap: 18,
-  },
+  subtitle: { fontSize: 15, textAlign: "center", color: "#555", marginBottom: 20 },
+  cardsWrapper: { paddingHorizontal: 24, paddingBottom: 30, gap: 18 },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 22,
@@ -124,36 +131,19 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  cardHeader: {
+  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  cardTitle: { fontSize: 18, fontWeight: "700", color: "#4E90FF", flex: 1 },
+  securityBadge: { backgroundColor: "#4E90FF", borderRadius: 10, padding: 4 },
+  cardDescription: { fontSize: 14, color: "#666", marginBottom: 18 },
+  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  cardAction: { fontSize: 14, fontWeight: "600", color: "#4E90FF", marginRight: 6 },
+  shareButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#4E90FF",
-    flex: 1,
-  },
-  securityBadge: {
     backgroundColor: "#4E90FF",
-    borderRadius: 10,
-    padding: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 18,
   },
-  cardDescription: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 18,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-  cardAction: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#4E90FF",
-    marginRight: 6,
-  },
+  shareButtonText: { color: "#FFF", fontSize: 13, fontWeight: "600", marginLeft: 6 },
 });
