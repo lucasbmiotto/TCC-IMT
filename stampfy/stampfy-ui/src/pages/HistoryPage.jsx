@@ -15,7 +15,6 @@ function HistoryPage() {
   const [records, setRecords] = useState([]);
   const navigate = useNavigate();
 
-  // ✅ Busca direto do localStorage
   useEffect(() => {
     const savedCredentials = JSON.parse(localStorage.getItem("credentials") || "[]");
     setRecords(savedCredentials);
@@ -51,25 +50,28 @@ function HistoryPage() {
                     <p className="text-xs">{new Date(record.onChain.timestamp).toLocaleString()}</p>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      const payload = {
-                        id: record.id,
-                        onChain: record.onChain,
-                        credential: record.credentialData, // ✅ garante que os dados completos vão pro QR
-                        blockchainProof: {
-                          hash: record.onChain.hash,
-                          issuer: record.onChain.issuer,
-                          timestamp: record.onChain.timestamp,
-                        },
-                      };
-                      navigate("/qrcode", { state: { record: payload } });
-                    }}
-                  >
-                    <QrCode className="h-4 w-4" />
-                  </Button>
+                  {/* Só mostra o botão se qrRead não for true */}
+                  {!record.qrRead && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const payload = {
+                          id: record.id,
+                          onChain: record.onChain,
+                          credential: record.credentialData,
+                          blockchainProof: {
+                            hash: record.onChain.hash,
+                            issuer: record.onChain.issuer,
+                            timestamp: record.onChain.timestamp,
+                          },
+                        };
+                        navigate("/qrcode", { state: { record: payload } });
+                      }}
+                    >
+                      <QrCode className="h-4 w-4" />
+                    </Button>
+                  )}
                 </motion.li>
               ))}
             </motion.ul>
