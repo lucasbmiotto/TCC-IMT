@@ -8,6 +8,7 @@ const iconMap = {
   nome: User,
   cpf: Hash,
   'data-nascimento': Calendar,
+  'data-expedicao': Calendar,
   filiacao: Users,
   cidade: MapPin,
   'numero-registro': BookOpen
@@ -16,15 +17,19 @@ const iconMap = {
 export const documentFieldsConfig = {
   rg: [
     { id: 'nome', label: 'Nome Completo', type: 'text', placeholder: 'Ex: João da Silva' },
+    { id: 'numero-registro', label: 'Registro Geral', type: 'text', placeholder: '01234567890' },
+    { id: 'data-expedicao', label: 'Data de Expedição', type: 'date' },
     { id: 'cpf', label: 'CPF', type: 'text', placeholder: '000.000.000-00' },
     { id: 'data-nascimento', label: 'Data de Nascimento', type: 'date' },
     { id: 'filiacao', label: 'Filiação', type: 'text', placeholder: 'Ex: Maria da Silva e José da Silva' },
+    { id: 'naturalidade', label: 'Naturalidade', type: 'text', placeholder: 'Ex: São Paulo' },
   ],
   cnh: [
     { id: 'nome', label: 'Nome Completo', type: 'text', placeholder: 'Ex: João da Silva' },
     { id: 'cpf', label: 'CPF', type: 'text', placeholder: '000.000.000-00' },
     { id: 'data-nascimento', label: 'Data de Nascimento', type: 'date' },
     { id: 'numero-registro', label: 'Número de Registro', type: 'text', placeholder: '01234567890' },
+    { id: 'nacionalidade', label: 'Nacionalidade', type: 'text', placeholder: 'Ex: Brasileiro' },
   ],
   nascimento: [
     { id: 'nome', label: 'Nome Completo', type: 'text', placeholder: 'Ex: João da Silva' },

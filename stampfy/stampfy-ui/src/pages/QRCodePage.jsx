@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import QRCode from 'react-qr-code';
 
@@ -6,6 +6,17 @@ function QRCodePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { record } = location.state || {};
+
+  useEffect(() => {
+    // Marca o registro como lido no localStorage
+    if (record && record.id) {
+      const credentials = JSON.parse(localStorage.getItem("credentials") || "[]");
+      const updated = credentials.map(item =>
+        item.id === record.id ? { ...item, qrRead: true } : item
+      );
+      localStorage.setItem("credentials", JSON.stringify(updated));
+    }
+  }, [record]);
 
   if (!record) {
     return (
@@ -35,7 +46,7 @@ function QRCodePage() {
         ))}
 
         <h3 className="font-bold text-lg mt-4">Prova na Blockchain</h3>
-        <p><span className="font-semibold">Hash:</span> {blockchainProof.hash}</p>
+        <p className="break-all"><span className="font-semibold">Hash:</span> {blockchainProof.hash}</p>
         <p><span className="font-semibold">Emissor:</span> {blockchainProof.issuer}</p>
         <p><span className="font-semibold">Timestamp:</span> {new Date(blockchainProof.timestamp).toLocaleString()}</p>
       </div>
