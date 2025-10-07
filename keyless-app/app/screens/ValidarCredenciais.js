@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
-import { saveCredential } from "../utils/storage";
+import { saveCredential } from "../utils/Storage";
 
 const { width } = Dimensions.get("window");
 

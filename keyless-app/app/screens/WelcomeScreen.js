@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { saveDID } from '../utils/storage';
+import { saveDID } from '../utils/Storage';
 
 export default function WelcomeScreen({ navigation, route }) {
   const { seed } = route.params;

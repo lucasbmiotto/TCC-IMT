@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { getDID, getSeedPhrase, getAllCredentials } from '../utils/storage';
+import { getDID, getSeedPhrase, getAllCredentials } from '../utils/Storage';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function WalletBackupScreen({ navigation }) {

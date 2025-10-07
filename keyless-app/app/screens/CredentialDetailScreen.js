@@ -1,132 +1,102 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+
+const RG_FIELDS = {
+  nome: "João da Silva",
+  rg: "123456789",
+  cpf: "000.000.000-00",
+  data_nascimento: "01/01/1990",
+  naturalidade: "São Paulo",
+};
+
+const CNH_FIELDS = {
+  nome: "João da Silva",
+  cnh: "987654321",
+  cpf: "000.000.000-00",
+  validade: "31/12/2028",
+  categoria: "B",
+};
 
 export default function CredentialDetailScreen({ route, navigation }) {
-  // Agora recebemos a credencial inteira, não só o ID
-  const { credential } = route.params;
-
-  // Se o QR Code trouxe dados extras, usamos eles como campos
-  const fields = credential.data
-    ? Object.keys(credential.data).filter((k) => k !== "id" && k !== "title" && k !== "description")
-    : [];
-
+  const { type } = route.params;
+  const fields = type === "RG" ? RG_FIELDS : CNH_FIELDS;
   const [selectedFields, setSelectedFields] = useState([]);
-  const [animations] = useState(fields.map(() => new Animated.Value(0)));
 
-  const toggleField = (index) => {
-    if (selectedFields.includes(index)) {
-      setSelectedFields(selectedFields.filter((i) => i !== index));
-    } else {
-      setSelectedFields([...selectedFields, index]);
-    }
+  const toggleField = (field) => {
+    setSelectedFields((prev) =>
+      prev.includes(field)
+        ? prev.filter((f) => f !== field)
+        : [...prev, field]
+    );
   };
 
-  const selectAll = () => {
-    if (selectedFields.length === fields.length) {
-      setSelectedFields([]);
-    } else {
-      setSelectedFields(fields.map((_, i) => i));
-    }
+  const handleShare = () => {
+    const sharedFields = selectedFields.map((field) => ({
+      name: field,
+      value: fields[field],
+    }));
+    navigation.navigate("ShareQRCode", {
+      credential: {
+        type,
+        sharedFields,
+      },
+    });
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 24 }}>
-      <Text style={styles.title}>{credential.title}</Text>
-      <Text style={styles.subtitle}>{credential.description}</Text>
-
-      {fields.length > 0 && (
-        <TouchableOpacity style={styles.selectAllButton} onPress={selectAll}>
-          <Text style={styles.selectAllText}>
-            {selectedFields.length === fields.length ? "Desmarcar tudo" : "Selecionar tudo"}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      {fields.length === 0 ? (
-        <Text style={{ textAlign: "center", color: "#666", marginTop: 20 }}>
-          Nenhum campo extra disponível nesta credencial.
-        </Text>
-      ) : (
-        fields.map((field, index) => {
-          const isSelected = selectedFields.includes(index);
-          return (
-            <TouchableOpacity key={index} onPress={() => toggleField(index)} activeOpacity={0.8}>
-              <Animated.View
-                style={[
-                  styles.fieldCard,
-                  {
-                    borderColor: isSelected ? "#4E90FF" : "#FFF",
-                    borderWidth: isSelected ? 2 : 0,
-                  },
-                ]}
-              >
-                <Text style={styles.fieldLabel}>
-                  {field}: {credential.data[field]}
-                </Text>
-                {isSelected && <Ionicons name="checkmark-circle" size={24} color="#4E90FF" />}
-              </Animated.View>
-            </TouchableOpacity>
-          );
-        })
-      )}
-
+    <View style={styles.container}>
+      <Text style={styles.title}>Selecione os dados para compartilhar ({type})</Text>
+      <ScrollView style={styles.fieldsList}>
+        {Object.keys(fields).map((field) => (
+          <TouchableOpacity
+            key={field}
+            style={[
+              styles.fieldItem,
+              selectedFields.includes(field) && styles.fieldItemSelected,
+            ]}
+            onPress={() => toggleField(field)}
+          >
+            <Text style={styles.fieldName}>{field}</Text>
+            <Text style={styles.fieldValue}>{fields[field]}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
       <TouchableOpacity
-        style={[styles.shareButton, { opacity: selectedFields.length === 0 ? 0.5 : 1 }]}
+        style={[
+          styles.shareButton,
+          selectedFields.length === 0 && { opacity: 0.5 },
+        ]}
         disabled={selectedFields.length === 0}
-        onPress={() =>
-          navigation.navigate("ShareQRCode", {
-            credential: {
-              title: credential.title,
-              fields: selectedFields.map((i) => ({
-                name: fields[i],
-                value: credential.data[fields[i]],
-              })),
-            },
-          })
-        }
+        onPress={handleShare}
       >
-        <Text style={styles.shareButtonText}>
-          Compartilhar {selectedFields.length} campo(s)
-        </Text>
+        <Text style={styles.shareButtonText}>Gerar QR Code</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EAF2FB" },
-  title: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#4E90FF",
-    marginTop: 40,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: { fontSize: 14, color: "#6B7A99", marginBottom: 20, textAlign: "center" },
-  selectAllButton: { alignSelf: "center", marginBottom: 20 },
-  selectAllText: { color: "#4E90FF", fontWeight: "700", fontSize: 14 },
-  fieldCard: {
+  container: { flex: 1, backgroundColor: "#F7F9FC", padding: 24 },
+  title: { fontSize: 22, fontWeight: "700", color: "#4E90FF", marginBottom: 18 },
+  fieldsList: { marginBottom: 24 },
+  fieldItem: {
     backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 22,
-    marginBottom: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 3,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#e0e7ef",
   },
-  fieldLabel: { fontSize: 16, fontWeight: "600", color: "#0F4C81" },
+  fieldItemSelected: {
+    borderColor: "#4E90FF",
+    backgroundColor: "#EAF2FB",
+  },
+  fieldName: { fontWeight: "700", color: "#4E90FF", marginBottom: 4 },
+  fieldValue: { color: "#333" },
   shareButton: {
-    marginTop: 20,
     backgroundColor: "#4E90FF",
-    paddingVertical: 16,
-    borderRadius: 24,
+    paddingVertical: 14,
+    borderRadius: 20,
     alignItems: "center",
   },
   shareButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
