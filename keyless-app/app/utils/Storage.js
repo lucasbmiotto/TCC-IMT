@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const PASSWORD_KEY = '@keyless_password';
 const SEED_KEY = '@keyless_seed';
 const DID_KEY = '@keyless_did';
-const CREDENTIALS_KEY = '@keyless_credentials';
+const CREDENTIALS_KEY_PREFIX = '@keyless_credentials_';
 
 // ----------------------
 // Senha / Seed / DID
@@ -34,22 +34,26 @@ export const getDID = async () => {
 };
 
 // ----------------------
-// Credenciais
+// Credenciais por DID
 // ----------------------
-export const saveCredential = async (credential) => {
+const getCredentialsKey = (did) => `${CREDENTIALS_KEY_PREFIX}${did}`;
+
+export const saveCredential = async (did, credential) => {
   try {
-    const stored = await AsyncStorage.getItem(CREDENTIALS_KEY);
+    const key = getCredentialsKey(did);
+    const stored = await AsyncStorage.getItem(key);
     const parsed = stored ? JSON.parse(stored) : [];
     parsed.push(credential);
-    await AsyncStorage.setItem(CREDENTIALS_KEY, JSON.stringify(parsed));
+    await AsyncStorage.setItem(key, JSON.stringify(parsed));
   } catch (e) {
     console.error('Erro ao salvar credencial:', e);
   }
 };
 
-export const getCredentials = async () => {
+export const getCredentials = async (did) => {
   try {
-    const stored = await AsyncStorage.getItem(CREDENTIALS_KEY);
+    const key = getCredentialsKey(did);
+    const stored = await AsyncStorage.getItem(key);
     return stored ? JSON.parse(stored) : [];
   } catch (e) {
     console.error('Erro ao carregar credenciais:', e);
@@ -57,13 +61,36 @@ export const getCredentials = async () => {
   }
 };
 
-export const clearCredentials = async () => {
-  await AsyncStorage.removeItem(CREDENTIALS_KEY);
+export const saveCredentials = async (did, credentials) => {
+  try {
+    const key = getCredentialsKey(did);
+    await AsyncStorage.setItem(key, JSON.stringify(credentials));
+  } catch (e) {
+    console.error('Erro ao sobrescrever credenciais:', e);
+  }
+};
+
+export const clearCredentials = async (did) => {
+  const key = getCredentialsKey(did);
+  await AsyncStorage.removeItem(key);
 };
 
 // ----------------------
 // Reset geral
 // ----------------------
 export const clearStorage = async () => {
-  await AsyncStorage.multiRemove([PASSWORD_KEY, SEED_KEY, DID_KEY, CREDENTIALS_KEY]);
+  const did = await getDID();
+  const keys = [PASSWORD_KEY, SEED_KEY, DID_KEY];
+  if (did) keys.push(getCredentialsKey(did));
+  await AsyncStorage.multiRemove(keys);
+};
+
+export const getAllCredentials = async () => {
+  const did = await getDID();
+  if (!did) return [];
+  return await getCredentials(did);
+};
+
+export const getSeedPhrase = async () => {
+  return await getSeed();
 };

@@ -1,133 +1,125 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from "react-native";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Switch 
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function CredentialDetailScreen({ route, navigation }) {
-  // Agora recebemos a credencial inteira, não só o ID
+export default function CredentialDetail({ route, navigation }) {
   const { credential } = route.params;
 
-  // Se o QR Code trouxe dados extras, usamos eles como campos
-  const fields = credential.data
-    ? Object.keys(credential.data).filter((k) => k !== "id" && k !== "title" && k !== "description")
-    : [];
+  // Estado para controlar quais campos o usuário quer compartilhar
+  const [selectedFields, setSelectedFields] = useState({});
 
-  const [selectedFields, setSelectedFields] = useState([]);
-  const [animations] = useState(fields.map(() => new Animated.Value(0)));
-
-  const toggleField = (index) => {
-    if (selectedFields.includes(index)) {
-      setSelectedFields(selectedFields.filter((i) => i !== index));
-    } else {
-      setSelectedFields([...selectedFields, index]);
-    }
+  const toggleField = (field) => {
+    setSelectedFields((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
-  const selectAll = () => {
-    if (selectedFields.length === fields.length) {
-      setSelectedFields([]);
-    } else {
-      setSelectedFields(fields.map((_, i) => i));
-    }
-  };
+  const fields = [
+    { label: "Nome", value: credential.fields?.nome, key: "nome" },
+    { label: "CPF", value: credential.fields?.cpf, key: "cpf" },
+    { label: "Registro", value: credential.fields?.numeroRegistro, key: "numeroRegistro" },
+    { label: "Data de Expedição", value: credential.fields?.dataExpedicao, key: "dataExpedicao" },
+    { label: "Data de Nascimento", value: credential.fields?.dataNascimento, key: "dataNascimento" },
+    { label: "Naturalidade", value: credential.fields?.naturalidade, key: "naturalidade" },
+    { label: "Filiação", value: credential.fields?.filiacao, key: "filiacao" },
+    { label: "Categoria (CNH)", value: credential.fields?.categoria, key: "categoria" },
+    { label: "Validade", value: credential.fields?.validade, key: "validade" },
+  ].filter((f) => f.value); // só mostra se tiver valor
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 24 }}>
-      <Text style={styles.title}>{credential.title}</Text>
-      <Text style={styles.subtitle}>{credential.description}</Text>
-
-      {fields.length > 0 && (
-        <TouchableOpacity style={styles.selectAllButton} onPress={selectAll}>
-          <Text style={styles.selectAllText}>
-            {selectedFields.length === fields.length ? "Desmarcar tudo" : "Selecionar tudo"}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      {fields.length === 0 ? (
-        <Text style={{ textAlign: "center", color: "#666", marginTop: 20 }}>
-          Nenhum campo extra disponível nesta credencial.
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons name="id-card-outline" size={40} color="#4E90FF" />
+        <Text style={styles.title}>{credential.title}</Text>
+        <Text style={styles.subtitle}>
+          Escolha quais informações deseja compartilhar futuramente
         </Text>
-      ) : (
-        fields.map((field, index) => {
-          const isSelected = selectedFields.includes(index);
-          return (
-            <TouchableOpacity key={index} onPress={() => toggleField(index)} activeOpacity={0.8}>
-              <Animated.View
-                style={[
-                  styles.fieldCard,
-                  {
-                    borderColor: isSelected ? "#4E90FF" : "#FFF",
-                    borderWidth: isSelected ? 2 : 0,
-                  },
-                ]}
-              >
-                <Text style={styles.fieldLabel}>
-                  {field}: {credential.data[field]}
-                </Text>
-                {isSelected && <Ionicons name="checkmark-circle" size={24} color="#4E90FF" />}
-              </Animated.View>
-            </TouchableOpacity>
-          );
-        })
-      )}
+      </View>
 
+      {/* Dados principais com switches */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Dados do Documento</Text>
+        {fields.map((field) => (
+          <View key={field.key} style={styles.detailRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>{field.label}:</Text>
+              <Text style={styles.value}>{field.value}</Text>
+            </View>
+            <Switch
+              value={!!selectedFields[field.key]}
+              onValueChange={() => toggleField(field.key)}
+              trackColor={{ false: "#ccc", true: "#4E90FF" }}
+              thumbColor={selectedFields[field.key] ? "#FFF" : "#f4f3f4"}
+            />
+          </View>
+        ))}
+      </View>
+
+      {/* Botão voltar */}
       <TouchableOpacity
-        style={[styles.shareButton, { opacity: selectedFields.length === 0 ? 0.5 : 1 }]}
-        disabled={selectedFields.length === 0}
-        onPress={() =>
-          navigation.navigate("ShareQRCode", {
-            credential: {
-              title: credential.title,
-              fields: selectedFields.map((i) => ({
-                name: fields[i],
-                value: credential.data[fields[i]],
-              })),
-            },
-          })
-        }
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
       >
-        <Text style={styles.shareButtonText}>
-          Compartilhar {selectedFields.length} campo(s)
-        </Text>
+        <Ionicons name="arrow-back" size={20} color="#FFF" />
+        <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#EAF2FB" },
-  title: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#4E90FF",
-    marginTop: 40,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: { fontSize: 14, color: "#6B7A99", marginBottom: 20, textAlign: "center" },
-  selectAllButton: { alignSelf: "center", marginBottom: 20 },
-  selectAllText: { color: "#4E90FF", fontWeight: "700", fontSize: 14 },
-  fieldCard: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 22,
-    marginBottom: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
+  container: { flex: 1, backgroundColor: "#F7F9FC" },
+  header: {
     alignItems: "center",
+    paddingVertical: 20,
+    backgroundColor: "#EAF2FB",
+    marginBottom: 16,
+  },
+  title: { fontSize: 24, fontWeight: "800", color: "#4E90FF", marginTop: 8 },
+  subtitle: { fontSize: 14, color: "#555", marginTop: 4, textAlign: "center", paddingHorizontal: 20 },
+  card: {
+    backgroundColor: "#FFF",
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 16,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 3,
   },
-  fieldLabel: { fontSize: 16, fontWeight: "600", color: "#0F4C81" },
-  shareButton: {
-    marginTop: 20,
-    backgroundColor: "#4E90FF",
-    paddingVertical: 16,
-    borderRadius: 24,
-    alignItems: "center",
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0F4C81",
+    marginBottom: 12,
   },
-  shareButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  label: { fontWeight: "600", color: "#333" },
+  value: { color: "#555", marginTop: 2 },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4E90FF",
+    margin: 20,
+    padding: 14,
+    borderRadius: 12,
+    justifyContent: "center",
+  },
+  backButtonText: { color: "#FFF", fontWeight: "700", marginLeft: 8 },
 });
