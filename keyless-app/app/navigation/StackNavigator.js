@@ -19,10 +19,9 @@ import CredentialDetailScreen from '../screens/CredentialDetailScreen';
 import ShareQRCodeScreen from '../screens/ShareQRCodeScreen';
 import LocalHelpScreen from '../screens/LocalHelpScreen';
 import ValidateCredentialsScreen from '../screens/ValidateCredentialsScreen';
-
-// 🚀 Novas telas adicionadas
 import SupportScreen from '../screens/SupportScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
+import ImportWalletScreen from '../screens/ImportWallet';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,12 +43,9 @@ export default function StackNavigator() {
       <Stack.Screen name="WalletBackup" component={DownloadWalletScreen} />
       <Stack.Screen name="ValidateCredentials" component={ValidarCredenciais} />
       <Stack.Screen name="ValidateCredentialLogin" component={ValidateCredentialsScreen} />
-
-      {/* 🚀 Novas rotas */}
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="TermsOfUse" component={TermsOfUseScreen} />
-      
-
+      <Stack.Screen name="ImportWallet" component={ImportWalletScreen} />
       <Stack.Screen name="CredentialDetail" component={CredentialDetailScreen} />
       <Stack.Screen name="ShareQRCode" component={ShareQRCodeScreen} />
       <Stack.Screen name="LocalHelp" component={LocalHelpScreen} />

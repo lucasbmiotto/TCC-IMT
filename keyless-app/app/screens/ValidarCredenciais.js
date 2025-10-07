@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
-import { saveCredential } from "../utils/storage";
+import { saveCredential, getDID } from "../utils/storage";
 
 const { width } = Dimensions.get("window");
 
 export default function QRCodeScanner({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const [qrData, setQrData] = useState(null);
+  const scanningRef = useRef(false);
 
   if (!permission) {
     return (
@@ -32,26 +32,56 @@ export default function QRCodeScanner({ navigation }) {
     );
   }
 
-  const handleBarCodeScanned = ({ data }) => {
-    if (scanned) return;
+  const handleBarCodeScanned = async ({ data }) => {
+    if (scanningRef.current) return;
+    scanningRef.current = true;
     setScanned(true);
-    setQrData(data);
 
     try {
-      const parsed = JSON.parse(data); // QR deve conter JSON
-      const newCredential = {
-        id: parsed.id || Date.now().toString(),
-        title: parsed.title || "Credencial",
-        description: parsed.description || "Sem descrição",
-        data: parsed,
-      };
-      saveCredential(newCredential);
+      const parsed = JSON.parse(data);
+      const did = await getDID(); // 🔑 pega o DID atual
 
-      Alert.alert("QR Code detectado", "Credencial adicionada com sucesso ✅", [
-        { text: "OK", onPress: () => navigation.replace("Credentials") },
-      ]);
+      const newCredential = {
+        id: parsed.id?.toString() || Date.now().toString(),
+        type: parsed.credential?.type || parsed.onChain?.credType || "Credencial",
+        title: parsed.credential?.type || "Credencial",
+        ownerDID: parsed.credential?.ownerDID || "",
+        issuerDID: parsed.credential?.issuerDID || "",
+        onChain: parsed.onChain || {},
+        blockchainProof: parsed.blockchainProof || {},
+        fields: {
+          nome: parsed.credential?.fields?.nome || "",
+          cpf: parsed.credential?.fields?.cpf || "",
+          numeroRegistro: parsed.credential?.fields?.["numero-registro"] || "",
+          dataExpedicao: parsed.credential?.fields?.["data-expedicao"] || "",
+          dataNascimento: parsed.credential?.fields?.["data-nascimento"] || "",
+          naturalidade: parsed.credential?.fields?.naturalidade || "",
+          filiacao: parsed.credential?.fields?.filiacao || "",
+          categoria: parsed.credential?.fields?.categoria || "",
+          validade: parsed.credential?.fields?.validade || "",
+        },
+        createdAt: new Date().toISOString(),
+      };
+
+      await saveCredential(did, newCredential);
+
+      Alert.alert(
+        "Credencial adicionada ✅",
+        `Nome: ${newCredential.fields.nome || "-"}\nCPF: ${newCredential.fields.cpf || "-"}`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              scanningRef.current = false;
+              navigation.replace("Home");
+            },
+          },
+        ]
+      );
     } catch (e) {
-      Alert.alert("Erro", "QR Code inválido ou formato inesperado.");
+      Alert.alert("Erro", "QR Code inválido ou formato inesperado.", [
+        { text: "OK", onPress: () => (scanningRef.current = false) },
+      ]);
       setScanned(false);
     }
   };
@@ -72,21 +102,18 @@ export default function QRCodeScanner({ navigation }) {
         <View style={styles.qrFrame} />
       </View>
 
-      <View style={styles.resultBox}>
-        <Text style={styles.instruction}>
-          {qrData ? `QR Code detectado:\n${qrData}` : "Aponte a câmera para o QR Code"}
-        </Text>
-
-        {scanned && (
-          <TouchableOpacity
-            style={styles.scanButton}
-            onPress={() => setScanned(false)}
-          >
-            <Ionicons name="scan-outline" size={18} color="#FFF" />
-            <Text style={styles.scanButtonText}>Escanear novamente</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      {scanned && (
+        <TouchableOpacity
+          style={styles.scanButton}
+          onPress={() => {
+            setScanned(false);
+            scanningRef.current = false;
+          }}
+        >
+          <Ionicons name="scan-outline" size={18} color="#FFF" />
+          <Text style={styles.scanButtonText}>Escanear novamente</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -103,8 +130,6 @@ const styles = StyleSheet.create({
   cameraWrapper: { width: width * 0.75, aspectRatio: 1, borderRadius: 28, overflow: "hidden", borderWidth: 3, borderColor: "#4E90FF", marginBottom: 40 },
   camera: { flex: 1 },
   qrFrame: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, borderWidth: 4, borderColor: "rgba(255,255,255,0.6)", borderRadius: 28 },
-  resultBox: { width: "85%", alignItems: "center", backgroundColor: "#D9E9FA", borderRadius: 20, padding: 24 },
-  instruction: { color: "#0F4C81", fontSize: 18, fontWeight: "600", textAlign: "center", marginBottom: 20 },
   scanButton: { flexDirection: "row", alignItems: "center", backgroundColor: "#4E90FF", paddingVertical: 14, paddingHorizontal: 24, borderRadius: 24 },
   scanButtonText: { color: "#FFF", fontSize: 16, marginLeft: 10, fontWeight: "700" },
 });

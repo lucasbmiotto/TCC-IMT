@@ -7,18 +7,21 @@ import {
   ScrollView,
   Animated,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getCredentials } from "../utils/storage";
+import { getCredentials, saveCredentials, getDID } from "../utils/storage";
 
 export default function CredentialsScreen({ navigation }) {
   const [credentials, setCredentials] = useState([]);
 
   useEffect(() => {
     const load = async () => {
-      const creds = await getCredentials();
-      setCredentials(creds);
+      const did = await getDID();
+      if (!did) return;
+      const creds = await getCredentials(did);
+      setCredentials(creds || []);
     };
     const unsubscribe = navigation.addListener("focus", load);
     return unsubscribe;
@@ -28,8 +31,26 @@ export default function CredentialsScreen({ navigation }) {
     navigation.navigate("CredentialDetail", { credential: cred });
   };
 
-  const handleShare = (cred) => {
-    navigation.navigate("ShareCredential", { credential: cred });
+  const handleDelete = async (credId) => {
+    const did = await getDID();
+    if (!did) return;
+
+    Alert.alert(
+      "Excluir credencial",
+      "Tem certeza que deseja excluir esta credencial? Essa ação não pode ser desfeita.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            const updated = credentials.filter((c) => c.id !== credId);
+            setCredentials(updated);
+            await saveCredentials(did, updated);
+          },
+        },
+      ]
+    );
   };
 
   const AnimatedCard = ({ cred }) => {
@@ -65,21 +86,24 @@ export default function CredentialsScreen({ navigation }) {
               <MaterialCommunityIcons name="shield-check" size={16} color="#fff" />
             </View>
           </View>
-          <Text style={styles.cardDescription}>{cred.description}</Text>
+
+          <Text style={styles.cardDescription}>
+            {cred.description || cred.fields?.nome || "Sem descrição"}
+          </Text>
 
           <View style={styles.cardFooter}>
-            <TouchableOpacity
-              style={styles.shareButton}
-              onPress={() => handleShare(cred)}
-            >
-              <Ionicons name="qr-code-outline" size={18} color="#FFF" />
-              <Text style={styles.shareButtonText}>Compartilhar</Text>
-            </TouchableOpacity>
-
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={styles.cardAction}>Acessar</Text>
               <Ionicons name="chevron-forward" size={20} color="#4E90FF" />
             </View>
+
+            {/* Botão de deletar */}
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDelete(cred.id)}
+            >
+              <Ionicons name="trash-outline" size={18} color="#FFF" />
+            </TouchableOpacity>
           </View>
         </Animated.View>
       </TouchableWithoutFeedback>
@@ -95,13 +119,20 @@ export default function CredentialsScreen({ navigation }) {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.cardsWrapper} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.cardsWrapper}
+        showsVerticalScrollIndicator={false}
+      >
         {credentials.length === 0 ? (
           <Text style={{ textAlign: "center", color: "#666" }}>
             Nenhuma credencial cadastrada ainda. Escaneie um QR para começar.
           </Text>
         ) : (
-          credentials.map((cred) => <AnimatedCard key={cred.id} cred={cred} />)
+          credentials
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // mais novos primeiro
+            .map((cred, index) => (
+              <AnimatedCard key={`${cred.id}-${index}`} cred={cred} />
+            ))
         )}
       </ScrollView>
     </SafeAreaView>
@@ -135,15 +166,15 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 18, fontWeight: "700", color: "#4E90FF", flex: 1 },
   securityBadge: { backgroundColor: "#4E90FF", borderRadius: 10, padding: 4 },
   cardDescription: { fontSize: 14, color: "#666", marginBottom: 18 },
-  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  cardAction: { fontSize: 14, fontWeight: "600", color: "#4E90FF", marginRight: 6 },
-  shareButton: {
+  cardFooter: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#4E90FF",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 18,
   },
-  shareButtonText: { color: "#FFF", fontSize: 13, fontWeight: "600", marginLeft: 6 },
+  cardAction: { fontSize: 14, fontWeight: "600", color: "#4E90FF", marginRight: 6 },
+  deleteButton: {
+    backgroundColor: "#FF4E4E",
+    padding: 8,
+    borderRadius: 12,
+  },
 });
