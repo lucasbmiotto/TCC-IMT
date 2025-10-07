@@ -10,7 +10,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { saveDID, saveSeed, saveCredentials } from '../utils/Storage';
+import { saveDID, saveSeed, saveCredentials } from '../utils/storage';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ImportWallet({ navigation }) {

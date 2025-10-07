@@ -9,7 +9,7 @@ import {
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getDID, getSeedPhrase, getAllCredentials } from '../utils/Storage';
+import { getDID, getSeedPhrase, getAllCredentials } from '../utils/storage';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function WalletBackupScreen() {
