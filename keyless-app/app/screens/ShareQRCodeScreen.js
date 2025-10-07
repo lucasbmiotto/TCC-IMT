@@ -17,10 +17,7 @@ export default function ShareQRCodeScreen({ route, navigation }) {
       id: credential.id || null,
       title: credential.title || "",
       description: credential.description || "",
-      sharedFields: (selectedFields || []).map((field) => ({
-        name: field.name,
-        value: credential.data && credential.data[field.name] ? credential.data[field.name] : null,
-      })),
+      sharedFields: selectedFields, // Usa diretamente os valores selecionados!
       timestamp: Date.now(),
     };
 
@@ -40,7 +37,7 @@ export default function ShareQRCodeScreen({ route, navigation }) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [credential, selectedFields]);
+  }, [credential, selectedFields, navigation]);
 
   // Simulação: QR Code foi escaneado
   const handleScanned = () => {
@@ -87,5 +84,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: "center"
   },
-  scanButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 }
+  scanButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+  fieldsBox: { marginTop: 24, width: "100%" },
+  fieldRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 10 },
+  fieldLabel: { fontWeight: "700", color: "#4E90FF" },
+  fieldValue: { color: "#333" },
 });
