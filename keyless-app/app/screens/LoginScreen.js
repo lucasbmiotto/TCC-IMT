@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { getPassword, getSeed } from '../utils/storage';
+import { getPassword, getSeed } from '../utils/Storage';
 
 export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');

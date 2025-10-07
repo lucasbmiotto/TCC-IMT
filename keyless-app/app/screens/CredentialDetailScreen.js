@@ -34,6 +34,18 @@ export default function CredentialDetail({ route, navigation }) {
     { label: "Validade", value: credential.fields?.validade, key: "validade" },
   ].filter((f) => f.value); // só mostra se tiver valor
 
+  // Gera lista dos campos selecionados
+  const selectedFieldsList = fields
+    .filter((field) => selectedFields[field.key])
+    .map((field) => ({ name: field.key, value: field.value }));
+
+  const handleShare = () => {
+    navigation.navigate("ShareQRCode", {
+      credential,
+      selectedFields: selectedFieldsList,
+    });
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -41,7 +53,7 @@ export default function CredentialDetail({ route, navigation }) {
         <Ionicons name="id-card-outline" size={40} color="#4E90FF" />
         <Text style={styles.title}>{credential.title}</Text>
         <Text style={styles.subtitle}>
-          Escolha quais informações deseja compartilhar futuramente
+          Escolha quais informações deseja compartilhar
         </Text>
       </View>
 
@@ -63,6 +75,19 @@ export default function CredentialDetail({ route, navigation }) {
           </View>
         ))}
       </View>
+
+      {/* Botão compartilhar */}
+      <TouchableOpacity
+        style={[
+          styles.shareButton,
+          selectedFieldsList.length === 0 && { opacity: 0.5 },
+        ]}
+        disabled={selectedFieldsList.length === 0}
+        onPress={handleShare}
+      >
+        <Ionicons name="share-social-outline" size={20} color="#FFF" />
+        <Text style={styles.shareButtonText}>Compartilhar Selecionados</Text>
+      </TouchableOpacity>
 
       {/* Botão voltar */}
       <TouchableOpacity
@@ -112,6 +137,17 @@ const styles = StyleSheet.create({
   },
   label: { fontWeight: "600", color: "#333" },
   value: { color: "#555", marginTop: 2 },
+  shareButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4E90FF",
+    marginHorizontal: 20,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 12,
+    justifyContent: "center",
+  },
+  shareButtonText: { color: "#FFF", fontWeight: "700", marginLeft: 8 },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
