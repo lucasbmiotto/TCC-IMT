@@ -11,10 +11,12 @@ export default function ShareQRCodeScreen({ route, navigation }) {
   useEffect(() => {
     if (!credential) return;
 
+    // Inclui o hash do documento no QRCode, mas não exibe na tela
     const qrData = {
       id: credential.id || null,
       type: credential.type || "",
       title: credential.title || "",
+      hash: credential.onChain?.hash || credential.hash || null, // <-- Inclui o hash aqui!
       sharedFields: selectedFields,
       timestamp: Date.now(),
     };
