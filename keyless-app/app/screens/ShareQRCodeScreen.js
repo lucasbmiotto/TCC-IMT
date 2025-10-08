@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function ShareQRCodeScreen({ route, navigation }) {
-  // Recebemos a credencial inteira e os campos selecionados
   const { credential, selectedFields = [] } = route.params || {};
 
   const [timer, setTimer] = useState(5 * 60); // 5 minutos em segundos
@@ -12,18 +11,16 @@ export default function ShareQRCodeScreen({ route, navigation }) {
   useEffect(() => {
     if (!credential) return;
 
-    // Monta o objeto com os dados da credencial e apenas os campos selecionados
     const qrData = {
       id: credential.id || null,
+      type: credential.type || "",
       title: credential.title || "",
-      description: credential.description || "",
-      sharedFields: selectedFields, // Usa diretamente os valores selecionados!
+      sharedFields: selectedFields,
       timestamp: Date.now(),
     };
 
     setQrValue(JSON.stringify(qrData));
 
-    // Timer regressivo
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
@@ -39,7 +36,6 @@ export default function ShareQRCodeScreen({ route, navigation }) {
     return () => clearInterval(interval);
   }, [credential, selectedFields, navigation]);
 
-  // Simulação: QR Code foi escaneado
   const handleScanned = () => {
     Alert.alert("Compartilhamento realizado", "Seus dados foram compartilhados com sucesso ✅");
     navigation.navigate("Home");
@@ -64,6 +60,15 @@ export default function ShareQRCodeScreen({ route, navigation }) {
           backgroundColor="#EAF2FB"
         />
       )}
+
+      <View style={styles.fieldsBox}>
+        {selectedFields.map((field) => (
+          <View key={field.name} style={styles.fieldRow}>
+            <Text style={styles.fieldLabel}>{field.name}:</Text>
+            <Text style={styles.fieldValue}>{field.value}</Text>
+          </View>
+        ))}
+      </View>
 
       <TouchableOpacity style={styles.scanButton} onPress={handleScanned}>
         <Text style={styles.scanButtonText}>Simular Escaneamento</Text>

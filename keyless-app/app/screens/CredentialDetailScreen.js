@@ -1,43 +1,49 @@
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Switch 
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from "react-native";
 
-export default function CredentialDetail({ route, navigation }) {
+export default function CredentialDetailScreen({ route, navigation }) {
   const { credential } = route.params;
 
-  // Estado para controlar quais campos o usuário quer compartilhar
+  // Campos conforme DynamicFormFields
+  const rgFields = [
+    { label: "Nome Completo", key: "nome" },
+    { label: "Registro Geral", key: "numero-registro" },
+    { label: "Data de Expedição", key: "data-expedicao" },
+    { label: "CPF", key: "cpf" },
+    { label: "Data de Nascimento", key: "data-nascimento" },
+    { label: "Filiação", key: "filiacao" },
+    { label: "Naturalidade", key: "naturalidade" },
+  ];
+  const cnhFields = [
+    { label: "Nome Completo", key: "nome" },
+    { label: "CPF", key: "cpf" },
+    { label: "Data de Nascimento", key: "data-nascimento" },
+    { label: "Número de Registro", key: "numero-registro" },
+    { label: "Nacionalidade", key: "nacionalidade" },
+  ];
+
+  const fields =
+    credential.type === "rg"
+      ? rgFields
+      : credential.type === "cnh"
+      ? cnhFields
+      : [];
+
   const [selectedFields, setSelectedFields] = useState({});
 
-  const toggleField = (field) => {
+  const toggleField = (key) => {
     setSelectedFields((prev) => ({
       ...prev,
-      [field]: !prev[field],
+      [key]: !prev[key],
     }));
   };
 
-  const fields = [
-    { label: "Nome", value: credential.fields?.nome, key: "nome" },
-    { label: "CPF", value: credential.fields?.cpf, key: "cpf" },
-    { label: "Registro", value: credential.fields?.numeroRegistro, key: "numeroRegistro" },
-    { label: "Data de Expedição", value: credential.fields?.dataExpedicao, key: "dataExpedicao" },
-    { label: "Data de Nascimento", value: credential.fields?.dataNascimento, key: "dataNascimento" },
-    { label: "Naturalidade", value: credential.fields?.naturalidade, key: "naturalidade" },
-    { label: "Filiação", value: credential.fields?.filiacao, key: "filiacao" },
-    { label: "Categoria (CNH)", value: credential.fields?.categoria, key: "categoria" },
-    { label: "Validade", value: credential.fields?.validade, key: "validade" },
-  ].filter((f) => f.value); // só mostra se tiver valor
-
-  // Gera lista dos campos selecionados
   const selectedFieldsList = fields
     .filter((field) => selectedFields[field.key])
-    .map((field) => ({ name: field.key, value: field.value }));
+    .map((field) => ({
+      name: field.key,
+      value: credential.fields[field.key],
+    }));
 
   const handleShare = () => {
     navigation.navigate("ShareQRCode", {
@@ -48,23 +54,13 @@ export default function CredentialDetail({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Ionicons name="id-card-outline" size={40} color="#4E90FF" />
-        <Text style={styles.title}>{credential.title}</Text>
-        <Text style={styles.subtitle}>
-          Escolha quais informações deseja compartilhar
-        </Text>
-      </View>
-
-      {/* Dados principais com switches */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Dados do Documento</Text>
-        {fields.map((field) => (
-          <View key={field.key} style={styles.detailRow}>
+      <Text style={styles.title}>Selecione os dados para compartilhar</Text>
+      {fields.map((field) =>
+        credential.fields[field.key] ? (
+          <View key={field.key} style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>{field.label}:</Text>
-              <Text style={styles.value}>{field.value}</Text>
+              <Text style={styles.value}>{credential.fields[field.key]}</Text>
             </View>
             <Switch
               value={!!selectedFields[field.key]}
@@ -73,10 +69,8 @@ export default function CredentialDetail({ route, navigation }) {
               thumbColor={selectedFields[field.key] ? "#FFF" : "#f4f3f4"}
             />
           </View>
-        ))}
-      </View>
-
-      {/* Botão compartilhar */}
+        ) : null
+      )}
       <TouchableOpacity
         style={[
           styles.shareButton,
@@ -85,16 +79,12 @@ export default function CredentialDetail({ route, navigation }) {
         disabled={selectedFieldsList.length === 0}
         onPress={handleShare}
       >
-        <Ionicons name="share-social-outline" size={20} color="#FFF" />
-        <Text style={styles.shareButtonText}>Compartilhar Selecionados</Text>
+        <Text style={styles.shareButtonText}>Gerar QR Code</Text>
       </TouchableOpacity>
-
-      {/* Botão voltar */}
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Ionicons name="arrow-back" size={20} color="#FFF" />
         <Text style={styles.backButtonText}>Voltar</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -102,60 +92,34 @@ export default function CredentialDetail({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F7F9FC" },
-  header: {
-    alignItems: "center",
-    paddingVertical: 20,
-    backgroundColor: "#EAF2FB",
-    marginBottom: 16,
-  },
-  title: { fontSize: 24, fontWeight: "800", color: "#4E90FF", marginTop: 8 },
-  subtitle: { fontSize: 14, color: "#555", marginTop: 4, textAlign: "center", paddingHorizontal: 20 },
-  card: {
-    backgroundColor: "#FFF",
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#0F4C81",
-    marginBottom: 12,
-  },
-  detailRow: {
+  container: { flex: 1, backgroundColor: "#F7F9FC", padding: 24 },
+  title: { fontSize: 22, fontWeight: "700", color: "#4E90FF", marginBottom: 18 },
+  row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e0e7ef",
   },
-  label: { fontWeight: "600", color: "#333" },
-  value: { color: "#555", marginTop: 2 },
+  label: { fontWeight: "700", color: "#4E90FF", marginBottom: 2 },
+  value: { color: "#333" },
   shareButton: {
-    flexDirection: "row",
-    alignItems: "center",
     backgroundColor: "#4E90FF",
-    marginHorizontal: 20,
-    marginBottom: 8,
-    padding: 14,
-    borderRadius: 12,
-    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 20,
+    alignItems: "center",
+    marginTop: 18,
   },
-  shareButtonText: { color: "#FFF", fontWeight: "700", marginLeft: 8 },
+  shareButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
   backButton: {
-    flexDirection: "row",
-    alignItems: "center",
     backgroundColor: "#4E90FF",
-    margin: 20,
-    padding: 14,
-    borderRadius: 12,
-    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignItems: "center",
+    marginTop: 12,
   },
-  backButtonText: { color: "#FFF", fontWeight: "700", marginLeft: 8 },
+  backButtonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 });
