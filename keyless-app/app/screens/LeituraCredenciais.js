@@ -47,7 +47,7 @@ export default function LeituraCredenciais({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Validar QR Code Compartilhado</Text>
       <Text style={styles.subtitle}>
-        Escaneie o QR Code compartilhado para visualizar os dados do RG
+        Escaneie o QR Code compartilhado para visualizar os dados do documento
       </Text>
 
       {!scanned && (
@@ -79,15 +79,24 @@ export default function LeituraCredenciais({ navigation }) {
           <Text style={styles.resultTitle}>Dados Compartilhados:</Text>
           <Text><Text style={styles.label}>Tipo:</Text> {scannedData.type || scannedData.title}</Text>
           <Text><Text style={styles.label}>Timestamp:</Text> {scannedData.timestamp ? new Date(scannedData.timestamp).toLocaleString() : "-"}</Text>
-          <Text style={styles.label}>Campos:</Text>
+
+          <Text style={[styles.label, { marginTop: 8 }]}>Campos:</Text>
           {Array.isArray(scannedData.sharedFields) && scannedData.sharedFields.length > 0 ? (
             scannedData.sharedFields.map((field) => (
-              <Text key={field.name}>
+              <Text key={field.name} style={{ marginTop: 6 }}>
                 <Text style={styles.fieldName}>{field.name}:</Text> {field.value}
               </Text>
             ))
           ) : (
             <Text>Nenhum campo compartilhado.</Text>
+          )}
+
+          {/* mostra o hash top-level se presente */}
+          {scannedData.onChainHash && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={styles.label}>Hash da Prova:</Text>
+              <Text selectable style={{ color: "#333", marginTop: 4 }}>{scannedData.onChainHash}</Text>
+            </View>
           )}
         </View>
       )}

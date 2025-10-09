@@ -39,26 +39,38 @@ export default function QRCodeScanner({ navigation }) {
 
     try {
       const parsed = JSON.parse(data);
-      const did = await getDID(); // 🔑 pega o DID atual
+      const did = await getDID();
+
+      // Se o payload trouxer onChainHash top-level, mapeamos para blockchainProof/onChain
+      const blockchainProof = parsed.blockchainProof || (parsed.onChainHash ? { hash: parsed.onChainHash } : {});
+      const onChain = parsed.onChain || (parsed.onChainHash ? { hash: parsed.onChainHash } : {});
+
+      const sharedFields = Array.isArray(parsed.sharedFields) ? parsed.sharedFields : [];
+
+      const getShared = (name) => {
+        const f = sharedFields.find((x) => x.name === name);
+        return f ? f.value : "";
+      };
 
       const newCredential = {
         id: parsed.id?.toString() || Date.now().toString(),
-        type: parsed.credential?.type || parsed.onChain?.credType || "Credencial",
-        title: parsed.credential?.type || "Credencial",
-        ownerDID: parsed.credential?.ownerDID || "",
-        issuerDID: parsed.credential?.issuerDID || "",
-        onChain: parsed.onChain || {},
-        blockchainProof: parsed.blockchainProof || {},
+        type: parsed.credential?.type || parsed.onChain?.credType || parsed.title || "Credencial",
+        title: parsed.credential?.type || parsed.title || "Credencial",
+        ownerDID: parsed.credential?.ownerDID || parsed.ownerDID || "",
+        issuerDID: parsed.credential?.issuerDID || parsed.issuerDID || "",
+        onChain,
+        blockchainProof,
         fields: {
-          nome: parsed.credential?.fields?.nome || "",
-          cpf: parsed.credential?.fields?.cpf || "",
-          numeroRegistro: parsed.credential?.fields?.["numero-registro"] || "",
-          dataExpedicao: parsed.credential?.fields?.["data-expedicao"] || "",
-          dataNascimento: parsed.credential?.fields?.["data-nascimento"] || "",
-          naturalidade: parsed.credential?.fields?.naturalidade || "",
-          filiacao: parsed.credential?.fields?.filiacao || "",
-          categoria: parsed.credential?.fields?.categoria || "",
-          validade: parsed.credential?.fields?.validade || "",
+          nome: parsed.credential?.fields?.nome || getShared("nome") || "",
+          cpf: parsed.credential?.fields?.cpf || getShared("cpf") || "",
+          nacionalidade: parsed.credential?.fields?.nacionalidade || getShared("nacionalidade") || "",
+          numeroRegistro: parsed.credential?.fields?.["numero-registro"] || getShared("numero-registro") || "",
+          dataExpedicao: parsed.credential?.fields?.["data-expedicao"] || getShared("data-expedicao") || "",
+          dataNascimento: parsed.credential?.fields?.["data-nascimento"] || getShared("data-nascimento") || "",
+          naturalidade: parsed.credential?.fields?.naturalidade || getShared("naturalidade") || "",
+          filiacao: parsed.credential?.fields?.filiacao || getShared("filiacao") || "",
+          categoria: parsed.credential?.fields?.categoria || getShared("categoria") || "",
+          validade: parsed.credential?.fields?.validade || getShared("validade") || "",
         },
         createdAt: new Date().toISOString(),
       };

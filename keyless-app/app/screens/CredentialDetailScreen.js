@@ -32,6 +32,7 @@ export default function CredentialDetail({ route, navigation }) {
     { label: "Filiação", value: credential.fields?.filiacao, key: "filiacao" },
     { label: "Categoria (CNH)", value: credential.fields?.categoria, key: "categoria" },
     { label: "Validade", value: credential.fields?.validade, key: "validade" },
+    { label: "Nacionalidade", value: credential.fields?.validade, key: "nacionalidade" },
   ].filter((f) => f.value); // só mostra se tiver valor
 
   // Gera lista dos campos selecionados
