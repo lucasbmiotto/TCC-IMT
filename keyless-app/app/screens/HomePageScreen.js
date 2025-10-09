@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Animated, Alert, Clipboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getDID } from '../utils/storage'; // Recupera o DID salvo
+import { getDID } from '../utils/Storage'; // Recupera o DID salvo
 
 export default function HomePageScreen({ navigation }) {
   const [did, setDid] = useState('');
