@@ -88,7 +88,7 @@ export default function HomePageScreen({ navigation }) {
         <ActionCard 
           title="Validar credenciais" 
           icon="checkmark-done-circle-outline" 
-          onPress={() => navigation.navigate('ValidateCredentials')} 
+          onPress={() => navigation.navigate('LeituraCredenciais')} 
         />
       </View>
 

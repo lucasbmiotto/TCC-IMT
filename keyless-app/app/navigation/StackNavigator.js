@@ -22,6 +22,7 @@ import ValidateCredentialsScreen from '../screens/ValidateCredentialsScreen';
 import SupportScreen from '../screens/SupportScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
 import ImportWalletScreen from '../screens/ImportWallet';
+import LeituraCredenciais from '../screens/LeituraCredenciais';
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +50,7 @@ export default function StackNavigator() {
       <Stack.Screen name="CredentialDetail" component={CredentialDetailScreen} />
       <Stack.Screen name="ShareQRCode" component={ShareQRCodeScreen} />
       <Stack.Screen name="LocalHelp" component={LocalHelpScreen} />
+      <Stack.Screen name="LeituraCredenciais" component={LeituraCredenciais} />
     </Stack.Navigator>
   );
 }
