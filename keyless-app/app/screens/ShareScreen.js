@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getCredentials, saveCredentials, getDID } from "../utils/storage";
+import { getCredentials, saveCredentials, getDID } from "../utils/Storage";
 
 export default function CredentialsScreen({ navigation }) {
   const [credentials, setCredentials] = useState([]);
