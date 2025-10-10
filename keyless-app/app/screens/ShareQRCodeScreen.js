@@ -3,27 +3,28 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
 export default function ShareQRCodeScreen({ route, navigation }) {
-  // Recebemos a credencial inteira e os campos selecionados
   const { credential, selectedFields = [] } = route.params || {};
 
-  const [timer, setTimer] = useState(5 * 60); // 5 minutos em segundos
+  const [timer, setTimer] = useState(5 * 60); // 5 minutos
   const [qrValue, setQrValue] = useState("");
 
   useEffect(() => {
     if (!credential) return;
 
-    // Monta o objeto com os dados da credencial e apenas os campos selecionados
+    // pega hash top-level gerado na importação (onChain ou blockchainProof)
+    const onChainHash = credential.onChain?.hash || credential.blockchainProof?.hash || null;
+
     const qrData = {
       id: credential.id || null,
       title: credential.title || "",
       description: credential.description || "",
-      sharedFields: selectedFields, // Usa diretamente os valores selecionados!
+      sharedFields: selectedFields, // somente campos selecionados
+      onChainHash, // hash top-level anexado (não duplicado por campo)
       timestamp: Date.now(),
     };
 
     setQrValue(JSON.stringify(qrData));
 
-    // Timer regressivo
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
@@ -39,7 +40,6 @@ export default function ShareQRCodeScreen({ route, navigation }) {
     return () => clearInterval(interval);
   }, [credential, selectedFields, navigation]);
 
-  // Simulação: QR Code foi escaneado
   const handleScanned = () => {
     Alert.alert("Compartilhamento realizado", "Seus dados foram compartilhados com sucesso ✅");
     navigation.navigate("Home");
@@ -57,12 +57,9 @@ export default function ShareQRCodeScreen({ route, navigation }) {
       <Text style={styles.subtitle}>QR Code válido por: {formatTime(timer)}</Text>
 
       {qrValue !== "" && (
-        <QRCode
-          value={qrValue}
-          size={250}
-          color="#4E90FF"
-          backgroundColor="#EAF2FB"
-        />
+        <View style={styles.qrWrapper}>
+          <QRCode value={qrValue} size={250} color="#4E90FF" backgroundColor="#EAF2FB" />
+        </View>
       )}
 
       <TouchableOpacity style={styles.scanButton} onPress={handleScanned}>
@@ -76,6 +73,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#EAF2FB", alignItems: "center", justifyContent: "center", padding: 20 },
   title: { fontSize: 28, fontWeight: "800", color: "#4E90FF", marginBottom: 12, textAlign: "center" },
   subtitle: { fontSize: 16, color: "#6B7A99", marginBottom: 24, textAlign: "center" },
+  qrWrapper: { backgroundColor: "#fff", padding: 16, borderRadius: 18, shadowColor: "#000", shadowOpacity: 0.06, shadowOffset: { width: 0, height: 6 }, shadowRadius: 12, elevation: 3 },
   scanButton: {
     marginTop: 30,
     backgroundColor: "#4E90FF",
@@ -85,8 +83,4 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   scanButtonText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-  fieldsBox: { marginTop: 24, width: "100%" },
-  fieldRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 10 },
-  fieldLabel: { fontWeight: "700", color: "#4E90FF" },
-  fieldValue: { color: "#333" },
 });
