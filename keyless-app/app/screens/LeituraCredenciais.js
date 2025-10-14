@@ -1,14 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Dimensions } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
+import "react-native-get-random-values"; 
+import { ethers } from "ethers";
+import stampfyAbi from "../src/abi/Stampfy.json";
+import { getDID, saveCredential } from "../utils/Storage";
 
 const { width } = Dimensions.get("window");
+
+const CONTRACT_ADDRESS = process.env.EXPO_PUBLIC_CONTRACT_ADDRESS;
+const RPC_URL = process.env.EXPO_PUBLIC_RPC_URL;
+
+console.log("RPC_URL:", RPC_URL);
+console.log("CONTRACT_ADDRESS:", CONTRACT_ADDRESS);
 
 export default function LeituraCredenciais({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scannedData, setScannedData] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const scanningRef = useRef(false);
 
   if (!permission) {
     return (
@@ -31,15 +42,48 @@ export default function LeituraCredenciais({ navigation }) {
     );
   }
 
-  const handleBarCodeScanned = ({ data }) => {
-    if (scanned) return;
+  const handleBarCodeScanned = async ({ data }) => {
+    if (scanningRef.current) return;
+    scanningRef.current = true;
     setScanned(true);
+
     try {
       const parsed = JSON.parse(data);
-      setScannedData(parsed);
-    } catch (e) {
+
+      const hash = parsed?.onChainHash || parsed?.onChain?.hash;
+      if (!hash) throw new Error("QR Code não contém hash de prova válido.");
+
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, stampfyAbi.abi, provider);
+
+      const allCreds = await contract.getAllCredentials();
+      const match = allCreds.find(c => c.hash.toLowerCase() === hash.toLowerCase());
+
+      const credentialData = {
+        ...parsed,
+        isValid: !!match
+      };
+      setScannedData(credentialData);
+
+      if (match) {
+        Alert.alert(
+          "✅ Credencial Válida",
+          "O hash da prova corresponde ao registro na blockchain. A credencial é legítima.",
+          [{ text: "OK", onPress: () => { scanningRef.current = false; } }]
+        );
+      } else {
+        Alert.alert(
+          "❌ Credencial Inválida",
+          "O hash não foi encontrado na blockchain. A credencial pode ter sido alterada ou é falsa.",
+          [{ text: "OK", onPress: () => { setScanned(false); scanningRef.current = false; } }]
+        );
+      }
+
+    } catch (err) {
+      console.error("Erro ao escanear QR:", err);
       Alert.alert("Erro", "QR Code inválido ou formato inesperado.");
       setScanned(false);
+      scanningRef.current = false;
     }
   };
 
@@ -47,7 +91,7 @@ export default function LeituraCredenciais({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Validar QR Code Compartilhado</Text>
       <Text style={styles.subtitle}>
-        Escaneie o QR Code compartilhado para visualizar os dados do documento
+        Escaneie o QR Code compartilhado para verificar a autenticidade
       </Text>
 
       {!scanned && (
@@ -67,6 +111,7 @@ export default function LeituraCredenciais({ navigation }) {
           onPress={() => {
             setScanned(false);
             setScannedData(null);
+            scanningRef.current = false;
           }}
         >
           <Ionicons name="scan-outline" size={18} color="#FFF" />
@@ -77,21 +122,33 @@ export default function LeituraCredenciais({ navigation }) {
       {scannedData && (
         <View style={styles.resultBox}>
           <Text style={styles.resultTitle}>Dados Compartilhados:</Text>
-          <Text><Text style={styles.label}>Tipo:</Text> {scannedData.type || scannedData.title}</Text>
-          <Text><Text style={styles.label}>Timestamp:</Text> {scannedData.timestamp ? new Date(scannedData.timestamp).toLocaleString() : "-"}</Text>
 
-          <Text style={[styles.label, { marginTop: 8 }]}>Campos:</Text>
-          {Array.isArray(scannedData.sharedFields) && scannedData.sharedFields.length > 0 ? (
-            scannedData.sharedFields.map((field) => (
-              <Text key={field.name} style={{ marginTop: 6 }}>
-                <Text style={styles.fieldName}>{field.name}:</Text> {field.value}
+          {scannedData.isValid ? (
+            <>
+              <Text style={{ color: "green", fontWeight: "700", marginBottom: 8 }}>
+                ✅ Credencial Válida
               </Text>
-            ))
+
+              <Text><Text style={styles.label}>Tipo:</Text> {scannedData.type || scannedData.title}</Text>
+              <Text><Text style={styles.label}>Timestamp:</Text> {scannedData.timestamp ? new Date(scannedData.timestamp).toLocaleString() : "-"}</Text>
+
+              <Text style={[styles.label, { marginTop: 8 }]}>Campos:</Text>
+              {Array.isArray(scannedData.sharedFields) && scannedData.sharedFields.length > 0 ? (
+                scannedData.sharedFields.map((field) => (
+                  <Text key={field.name} style={{ marginTop: 6 }}>
+                    <Text style={styles.fieldName}>{field.name}:</Text> {field.value}
+                  </Text>
+                ))
+              ) : (
+                <Text>Nenhum campo compartilhado.</Text>
+              )}
+            </>
           ) : (
-            <Text>Nenhum campo compartilhado.</Text>
+            <Text style={{ color: "red", fontWeight: "700" }}>
+              ❌ Credencial Inválida
+            </Text>
           )}
 
-          {/* mostra o hash top-level se presente */}
           {scannedData.onChainHash && (
             <View style={{ marginTop: 12 }}>
               <Text style={styles.label}>Hash da Prova:</Text>
